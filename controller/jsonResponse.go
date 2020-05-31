@@ -1,0 +1,20 @@
+package controller
+
+import (
+	"encoding/json"
+	"net/http"
+)
+
+type Response struct {
+	Message string `json:"message,omitempty"`
+}
+
+// RespondJSON - respond json with status
+func RespondJSON(w http.ResponseWriter, status int, payload interface{}) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	err := json.NewEncoder(w).Encode(payload)
+	if err != nil {
+		panic(err)
+	}
+}
