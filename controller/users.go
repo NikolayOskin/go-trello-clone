@@ -1,29 +1,14 @@
 package controller
 
 import (
-	"github.com/NikolayOskin/go-trello-clone/handlers"
+	mid "github.com/NikolayOskin/go-trello-clone/middleware"
 	"github.com/NikolayOskin/go-trello-clone/model"
 	"net/http"
 )
 
-func AddUser(w http.ResponseWriter, r *http.Request) {
-	var user model.User
+type UserController struct{}
 
-	err := decodeJSONBody(w, r, &user)
-	if err != nil {
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	}
-
-	err = handlers.HandleAddUser(user)
-	if err != nil {
-		RespondJSON(w, 400, &Response{Message:err.Error()})
-		return
-	}
-
-	RespondJSON(w, 200, &Response{Message:"Success"})
-}
-
-func GetAuthUser(w http.ResponseWriter, r *http.Request) {
-
+func (u *UserController) GetAuthUser(w http.ResponseWriter, r *http.Request) {
+	user := r.Context().Value(mid.UserCtx).(model.User)
+	RespondJSON(w, 200, user)
 }

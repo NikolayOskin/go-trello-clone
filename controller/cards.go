@@ -4,15 +4,16 @@ import (
 	"net/http"
 )
 
-func AddCard(w http.ResponseWriter, r *http.Request) {
+type CardController struct{}
+
+func (c *CardController) AddCard(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func DeleteCard(w http.ResponseWriter, r *http.Request) {
+func (c *CardController) DeleteCard(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func UpdateCard(w http.ResponseWriter, r *http.Request) {
+func (c *CardController) UpdateCard(w http.ResponseWriter, r *http.Request) {
 
 }
-
