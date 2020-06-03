@@ -1,18 +1,18 @@
 package handlers
 
 import (
+	"context"
 	"github.com/NikolayOskin/go-trello-clone/model"
 	"github.com/NikolayOskin/go-trello-clone/mongodb"
-	"context"
 	"go.mongodb.org/mongo-driver/bson"
 	"golang.org/x/crypto/bcrypt"
 )
 
-func HandleAuthenticate(userRequest model.User) error {
+func HandleAuthenticate(userRequest *model.User) error {
 	var user model.User
 
 	collection := mongodb.Client.Database("trello").Collection("users")
-	filter := bson.D{{"email", userRequest.Email}}
+	filter := bson.M{"email": userRequest.Email}
 
 	err := collection.FindOne(context.TODO(), filter).Decode(&user)
 	if err != nil {
@@ -23,6 +23,8 @@ func HandleAuthenticate(userRequest model.User) error {
 	if err != nil {
 		return err
 	}
+
+	userRequest.ID = user.ID
 
 	return nil
 }
