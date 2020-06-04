@@ -1,11 +1,11 @@
 package controller
 
 import (
-	"github.com/NikolayOskin/go-trello-clone/config"
 	"github.com/NikolayOskin/go-trello-clone/handlers"
 	"github.com/NikolayOskin/go-trello-clone/model"
-	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/dgrijalva/jwt-go"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -19,13 +19,11 @@ func (a *AuthController) SignIn(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-
 	err = handlers.HandleAuthenticate(&user)
 	if err != nil {
 		RespondJSON(w, 422, &Response{Message: err.Error()})
 		return
 	}
-
 	token, err := a.generateJWTToken(user)
 	if err != nil {
 		RespondJSON(w, 422, &Response{Message: err.Error()})
@@ -43,7 +41,6 @@ func (a *AuthController) SignUp(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-
 	err = handlers.HandleAddUser(user)
 	if err != nil {
 		RespondJSON(w, 400, &Response{Message: err.Error()})
@@ -64,7 +61,7 @@ func (a *AuthController) generateJWTToken(user model.User) (string, error) {
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString([]byte(config.JWTSecret))
+	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 
 	return tokenString, err
 }

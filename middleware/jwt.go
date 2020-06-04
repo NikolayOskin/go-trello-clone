@@ -3,10 +3,10 @@ package middleware
 import (
 	"context"
 	"errors"
-	"github.com/NikolayOskin/go-trello-clone/config"
 	"github.com/NikolayOskin/go-trello-clone/model"
 	"github.com/dgrijalva/jwt-go"
 	"net/http"
+	"os"
 )
 
 func JWTCheck(next http.Handler) http.Handler {
@@ -25,7 +25,7 @@ func JWTCheck(next http.Handler) http.Handler {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, errors.New("unexpected signing method")
 			}
-			return []byte(config.JWTSecret), nil
+			return []byte(os.Getenv("JWT_SECRET")), nil
 		})
 
 		if err != nil {
