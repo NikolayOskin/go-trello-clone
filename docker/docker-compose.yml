@@ -20,5 +20,7 @@ services:
       - 3000:3000
     volumes:
       - ../:/app
+    environment:
+      JWT_SECRET: your_jwt_secret_string
 volumes:
   mongodata:
