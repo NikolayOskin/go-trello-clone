@@ -1,6 +1,9 @@
 package model
 
+import "go.mongodb.org/mongo-driver/bson/primitive"
+
 type Board struct {
-	Title string `json:"title"`
-	UserId string `json:"user_id"`
+	ID     primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Title  string             `json:"title" bson:"title"`
+	UserId string             `json:"user_id,omitempty" bson:"user_id"`
 }
