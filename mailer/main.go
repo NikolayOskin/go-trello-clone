@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	pb "github.com/NikolayOskin/go-trello-clone/mailer/mailerpkg"
 	"github.com/mailgun/mailgun-go"
 	"google.golang.org/grpc"
+	"html/template"
 	"log"
 	"net"
 	"os"
@@ -13,25 +15,45 @@ import (
 
 type GRPCServer struct{}
 
-func (s *GRPCServer) SendEmail(ctx context.Context, in *pb.EmailRequest) (*pb.EmailResponse, error) {
-	mg := mailgun.NewMailgun(os.Getenv("MAILGUN_DOMAIN"), os.Getenv("MAILGUN_API_KEY"))
+var mg *mailgun.MailgunImpl
+var tpl *template.Template
 
-	sender := "sender@example.com"
-	subject := "Welcome!"
-	body := in.Code
-	recipient := in.Email
+type EmailConfirmMessage struct {
+	VerificationCode string
+	tplname          string
+}
 
-	message := mg.NewMessage(sender, subject, body, recipient)
+func (s *GRPCServer) SendEmail(ctx context.Context, r *pb.EmailRequest) (*pb.EmailResponse, error) {
+	m := &EmailConfirmMessage{r.Code, "signup-confirm.html"}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	var buf bytes.Buffer
+	err := tpl.ExecuteTemplate(&buf, m.tplname, m)
+	if err != nil {
+		log.Fatalf("failed to execute template: %v", err)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*4)
 	defer cancel()
 
-	_, _, err := mg.Send(message)
-	if err != nil {
-		return nil, err
+	if err = sendToMailgun("Thanks for registration!", buf.String(), r.Email); err != nil {
+		return &pb.EmailResponse{Sent: false}, nil
 	}
 
 	return &pb.EmailResponse{Sent: true}, nil
+}
+
+func sendToMailgun(s string, body string, toEmail string) error {
+	message := mg.NewMessage(os.Getenv("MAILER_SENDER"), s, "", toEmail)
+	message.SetHtml(body)
+	_, _, err := mg.Send(message)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func init() {
+	mg = mailgun.NewMailgun(os.Getenv("MAILGUN_DOMAIN"), os.Getenv("MAILGUN_API_KEY"))
+	tpl = template.Must(template.New("").ParseGlob("./templates/*.html"))
 }
 
 func main() {
@@ -39,7 +61,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-
 	grpcServer := grpc.NewServer()
 	pb.RegisterMailerServer(grpcServer, &GRPCServer{})
 	err = grpcServer.Serve(lis)
