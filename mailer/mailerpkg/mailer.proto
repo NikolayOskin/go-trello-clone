@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+service Mailer {
+    rpc SendEmail (EmailRequest) returns (EmailResponse) {}
+}
+
+message EmailRequest {
+    string email = 1;
+    string code = 2;
+}
+
+message EmailResponse {
+    bool sent = 1;
+}
