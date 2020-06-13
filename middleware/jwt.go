@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/NikolayOskin/go-trello-clone/model"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/go-chi/render"
 	"net/http"
 	"os"
 )
@@ -15,21 +16,19 @@ func JWTCheck(next http.Handler) http.Handler {
 		tokenString := r.Header.Get("Authorization")
 
 		if len(tokenString) == 0 {
-			http.Error(w, "Unauthenticated", 401)
+			render.JSON(w, r, render.M{"message": "Unauthenticated"})
 			return
 		}
 
 		cl := model.JWTClaims{}
-
 		_, err := jwt.ParseWithClaims(tokenString, &cl, func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, errors.New("unexpected signing method")
 			}
 			return []byte(os.Getenv("JWT_SECRET")), nil
 		})
-
 		if err != nil {
-			http.Error(w, "Unauthenticated", 401)
+			render.JSON(w, r, render.M{"message": "Unauthenticated"})
 			return
 		}
 		ctx = context.WithValue(r.Context(), UserCtx, cl.User)
