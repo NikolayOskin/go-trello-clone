@@ -12,48 +12,56 @@ import (
 	"net/http"
 )
 
-type CardController struct{}
+type ListController struct{}
 
-func (c *CardController) Create(w http.ResponseWriter, r *http.Request) {
-	var card model.Card
+func (l *ListController) Create(w http.ResponseWriter, r *http.Request) {
+	var list model.List
 	user := r.Context().Value(mid.UserCtx).(model.User)
-	if err := decodeJSON(w, r, &card); err != nil {
+	if err := decodeJSON(w, r, &list); err != nil {
 		JSONResp(w, 500, &ErrResp{Message: "Could not parse json request"})
 		return
 	}
-	card.UserId = user.ID.Hex()
-	if err := handlers.HandleCreateCard(card); err != nil {
+	list.UserId = user.ID.Hex()
+	if err := handlers.HandleCreateList(list); err != nil {
 		JSONResp(w, 500, &ErrResp{Message: "Server error"})
 		return
 	}
 	JSONResp(w, 200, &Response{Message: "Added"})
 }
 
-func (c *CardController) Update(w http.ResponseWriter, r *http.Request) {
-	card := r.Context().Value(mid.CardCtx).(model.Card)
+func (l *ListController) Update(w http.ResponseWriter, r *http.Request) {
+	list := r.Context().Value(mid.ListCtx).(model.List)
 	id, err := primitive.ObjectIDFromHex(chi.URLParam(r, "id"))
 	if err != nil {
 		JSONResp(w, 500, &ErrResp{Message: "Server error"})
 		return
 	}
-	card.ID = id
-	if err = handlers.HandleUpdateCard(card); err != nil {
+	list.ID = id
+	if err = handlers.HandleUpdateList(list); err != nil {
 		JSONResp(w, 200, &ErrResp{Message: "Server error"})
 		return
 	}
 	JSONResp(w, 200, &Response{Message: "Updated"})
 }
 
-func (c *CardController) Delete(w http.ResponseWriter, r *http.Request) {
+func (l *ListController) Delete(w http.ResponseWriter, r *http.Request) {
 	user := r.Context().Value(mid.UserCtx).(model.User)
 	id, err := primitive.ObjectIDFromHex(chi.URLParam(r, "id"))
 	if err != nil {
 		JSONResp(w, 500, &ErrResp{Message: "Server error"})
 		return
 	}
-	col := mongodb.Client.Database("trello").Collection("cards")
-	filter := bson.M{"_id": id, "user_id": user.ID.Hex()}
-	if _, err = col.DeleteOne(context.TODO(), filter); err != nil {
+	// first deleting cards associated with list
+	cardsCol := mongodb.Client.Database("trello").Collection("cards")
+	f := bson.M{"list_id": id.Hex(), "user_id": user.ID.Hex()}
+	if _, err := cardsCol.DeleteMany(context.TODO(), f); err != nil {
+		JSONResp(w, 500, &ErrResp{Message: err.Error()})
+		return
+	}
+	// then delete list itself
+	listsCol := mongodb.Client.Database("trello").Collection("lists")
+	f = bson.M{"_id": id, "user_id": user.ID.Hex()}
+	if _, err := listsCol.DeleteOne(context.TODO(), f); err != nil {
 		JSONResp(w, 500, &ErrResp{Message: err.Error()})
 		return
 	}

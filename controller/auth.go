@@ -13,41 +13,37 @@ type AuthController struct{}
 
 func (a *AuthController) SignIn(w http.ResponseWriter, r *http.Request) {
 	var user model.User
-
-	err := decodeJSONBody(w, r, &user)
-	if err != nil {
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+	if err := decodeJSON(w, r, &user); err != nil {
+		JSONResp(w, 400, &ErrResp{err.Error()})
 		return
 	}
-	err = handlers.HandleAuthenticate(&user)
-	if err != nil {
-		RespondJSON(w, 422, &Response{Message: err.Error()})
+	if err := handlers.HandleAuthenticate(&user); err != nil {
+		JSONResp(w, 422, &ErrResp{err.Error()})
 		return
 	}
 	token, err := a.generateJWTToken(user)
 	if err != nil {
-		RespondJSON(w, 422, &Response{Message: err.Error()})
+		JSONResp(w, 422, &ErrResp{err.Error()})
 		return
 	}
-
-	RespondJSON(w, 200, &JWTResponse{token})
+	JSONResp(w, 200, &JWTResponse{token})
 }
 
 func (a *AuthController) SignUp(w http.ResponseWriter, r *http.Request) {
 	var user model.User
-
-	err := decodeJSONBody(w, r, &user)
-	if err != nil {
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+	if err := decodeJSON(w, r, &user); err != nil {
+		JSONResp(w, 400, &ErrResp{err.Error()})
 		return
 	}
-	err = handlers.HandleAddUser(user)
-	if err != nil {
-		RespondJSON(w, 400, &Response{Message: err.Error()})
+	if err := handlers.HandleCreateUser(user); err != nil {
+		JSONResp(w, 400, &ErrResp{err.Error()})
 		return
 	}
+	JSONResp(w, 200, &Response{Message: "Success"})
+}
 
-	RespondJSON(w, 200, &Response{Message: "Success"})
+func (a *AuthController) VerifyEmail(w http.ResponseWriter, r *http.Request) {
+
 }
 
 func (a *AuthController) generateJWTToken(user model.User) (string, error) {
@@ -61,7 +57,7 @@ func (a *AuthController) generateJWTToken(user model.User) (string, error) {
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
+	tokenStr, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 
-	return tokenString, err
+	return tokenStr, err
 }

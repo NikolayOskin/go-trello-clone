@@ -17,8 +17,8 @@ type JWTResponse struct {
 	AccessToken string `json:"access_token,omitempty"`
 }
 
-// RespondJSON - respond json with status
-func RespondJSON(w http.ResponseWriter, status int, payload interface{}) {
+// JSONResp - respond json with status
+func JSONResp(w http.ResponseWriter, status int, payload interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	err := json.NewEncoder(w).Encode(payload)
