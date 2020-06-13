@@ -7,20 +7,18 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func HandleCreateBoard(board model.Board) error {
+func HandleCreateBoard(b model.Board) error {
 	col := mongodb.Client.Database("trello").Collection("boards")
-	_, err := col.InsertOne(context.TODO(), board)
-	if err != nil {
+	if _, err := col.InsertOne(context.TODO(), b); err != nil {
 		return err
 	}
 	return nil
 }
 
-func HandleUpdateBoard(board model.Board) error {
+func HandleUpdateBoard(b model.Board) error {
 	col := mongodb.Client.Database("trello").Collection("boards")
-	filter := bson.M{"_id": board.ID, "user_id": board.UserId}
-	_, err := col.UpdateOne(context.TODO(), filter, bson.M{"$set": board})
-	if err != nil {
+	f := bson.M{"_id": b.ID, "user_id": b.UserId}
+	if _, err := col.UpdateOne(context.TODO(), f, bson.M{"$set": b}); err != nil {
 		return err
 	}
 	return nil
