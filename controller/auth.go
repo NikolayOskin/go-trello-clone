@@ -17,7 +17,7 @@ func (a *AuthController) SignIn(w http.ResponseWriter, r *http.Request) {
 		JSONResp(w, 400, &ErrResp{err.Error()})
 		return
 	}
-	if err := handlers.HandleAuthenticate(&user); err != nil {
+	if err := handlers.Authenticate(&user); err != nil {
 		JSONResp(w, 422, &ErrResp{err.Error()})
 		return
 	}
@@ -35,7 +35,7 @@ func (a *AuthController) SignUp(w http.ResponseWriter, r *http.Request) {
 		JSONResp(w, 400, &ErrResp{err.Error()})
 		return
 	}
-	if err := handlers.HandleCreateUser(user); err != nil {
+	if err := handlers.CreateUser(user); err != nil {
 		JSONResp(w, 400, &ErrResp{err.Error()})
 		return
 	}

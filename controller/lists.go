@@ -1,13 +1,10 @@
 package controller
 
 import (
-	"context"
 	"github.com/NikolayOskin/go-trello-clone/handlers"
 	mid "github.com/NikolayOskin/go-trello-clone/middleware"
 	"github.com/NikolayOskin/go-trello-clone/model"
-	"github.com/NikolayOskin/go-trello-clone/mongodb"
 	"github.com/go-chi/chi"
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
 )
@@ -22,7 +19,7 @@ func (l *ListController) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	list.UserId = user.ID.Hex()
-	if err := handlers.HandleCreateList(list); err != nil {
+	if err := handlers.CreateList(list); err != nil {
 		JSONResp(w, 500, &ErrResp{Message: "Server error"})
 		return
 	}
@@ -37,7 +34,7 @@ func (l *ListController) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	list.ID = id
-	if err = handlers.HandleUpdateList(list); err != nil {
+	if err = handlers.UpdateList(list); err != nil {
 		JSONResp(w, 200, &ErrResp{Message: "Server error"})
 		return
 	}
@@ -51,17 +48,7 @@ func (l *ListController) Delete(w http.ResponseWriter, r *http.Request) {
 		JSONResp(w, 500, &ErrResp{Message: "Server error"})
 		return
 	}
-	// first deleting cards associated with list
-	cardsCol := mongodb.Client.Database("trello").Collection("cards")
-	f := bson.M{"list_id": id.Hex(), "user_id": user.ID.Hex()}
-	if _, err := cardsCol.DeleteMany(context.TODO(), f); err != nil {
-		JSONResp(w, 500, &ErrResp{Message: err.Error()})
-		return
-	}
-	// then delete list itself
-	listsCol := mongodb.Client.Database("trello").Collection("lists")
-	f = bson.M{"_id": id, "user_id": user.ID.Hex()}
-	if _, err := listsCol.DeleteOne(context.TODO(), f); err != nil {
+	if err := handlers.DeleteList(id, user); err != nil {
 		JSONResp(w, 500, &ErrResp{Message: err.Error()})
 		return
 	}

@@ -8,7 +8,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func HandleAuthenticate(requested *model.User) error {
+func Authenticate(requested *model.User) error {
 	var user model.User
 	col := mongodb.Client.Database("trello").Collection("users")
 	filter := bson.M{"email": requested.Email}

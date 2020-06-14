@@ -19,7 +19,7 @@ func (b *BoardController) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	board.UserId = user.ID.Hex()
-	if err := handlers.HandleCreateBoard(board); err != nil {
+	if err := handlers.CreateBoard(board); err != nil {
 		JSONResp(w, 500, &ErrResp{Message: "Server error"})
 		return
 	}
@@ -34,7 +34,7 @@ func (b *BoardController) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	board.ID = id
-	if err := handlers.HandleUpdateBoard(board); err != nil {
+	if err := handlers.UpdateBoard(board); err != nil {
 		JSONResp(w, 200, &ErrResp{Message: "Server error"})
 		return
 	}

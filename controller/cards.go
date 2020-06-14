@@ -22,7 +22,7 @@ func (c *CardController) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	card.UserId = user.ID.Hex()
-	if err := handlers.HandleCreateCard(card); err != nil {
+	if err := handlers.CreateCard(card); err != nil {
 		JSONResp(w, 500, &ErrResp{Message: "Server error"})
 		return
 	}
@@ -37,7 +37,7 @@ func (c *CardController) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	card.ID = id
-	if err = handlers.HandleUpdateCard(card); err != nil {
+	if err = handlers.UpdateCard(card); err != nil {
 		JSONResp(w, 200, &ErrResp{Message: "Server error"})
 		return
 	}

@@ -9,7 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func HandleCreateCard(c model.Card) error {
+func CreateCard(c model.Card) error {
 	repo := repository.Lists{}
 	list, err := repo.GetById(c.ListId)
 	if err != nil {
@@ -26,7 +26,7 @@ func HandleCreateCard(c model.Card) error {
 	return nil
 }
 
-func HandleUpdateCard(c model.Card) error {
+func UpdateCard(c model.Card) error {
 	col := mongodb.Client.Database("trello").Collection("cards")
 	filter := bson.M{"_id": c.ID, "user_id": c.UserId}
 	if _, err := col.UpdateOne(context.TODO(), filter, bson.M{"$set": c}); err != nil {
