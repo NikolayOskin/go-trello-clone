@@ -6,6 +6,7 @@ import (
 	pb "github.com/NikolayOskin/go-trello-clone/mailer/mailerpkg"
 	"github.com/NikolayOskin/go-trello-clone/model"
 	"github.com/NikolayOskin/go-trello-clone/mongodb"
+	"github.com/go-playground/validator/v10"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc"
 	"math/rand"
@@ -15,6 +16,10 @@ import (
 )
 
 func CreateUser(user model.User) error {
+	validate := validator.New()
+	if err := validate.Struct(user); err != nil {
+		return err
+	}
 	hash, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.MinCost)
 	if err != nil {
 		return err
@@ -25,13 +30,11 @@ func CreateUser(user model.User) error {
 	user.VerificationCode = rand.Int()
 
 	col := mongodb.Client.Database("trello").Collection("users")
-	_, err = col.InsertOne(context.TODO(), user)
-	if err != nil {
+	if _, err = col.InsertOne(context.TODO(), user); err != nil {
 		return err
 	}
 
-	err = sendCode(user.VerificationCode, user.Email)
-	if err != nil {
+	if err = sendCode(user.VerificationCode, user.Email); err != nil {
 		fmt.Println(err)
 	}
 
