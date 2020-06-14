@@ -4,24 +4,25 @@ import (
 	"context"
 	"github.com/NikolayOskin/go-trello-clone/model"
 	"github.com/go-chi/render"
+	"github.com/go-playground/validator/v10"
 	"net/http"
 )
 
 func DecodeBoardObj(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		board := model.Board{}
-		currentUser := r.Context().Value(UserCtx).(model.User)
-
-		err := render.DecodeJSON(r.Body, &board)
-		if err != nil {
+		b := model.Board{}
+		currUser := r.Context().Value(UserCtx).(model.User)
+		if err := render.DecodeJSON(r.Body, &b); err != nil {
 			render.JSON(w, r, render.M{"error": err.Error()})
 			return
 		}
-
-		board.UserId = currentUser.ID.Hex()
-
-		ctx := context.WithValue(r.Context(), BoardCtx, board)
-
+		validate := validator.New()
+		if err := validate.Struct(b); err != nil {
+			render.JSON(w, r, render.M{"error": err.Error()})
+			return
+		}
+		b.UserId = currUser.ID.Hex()
+		ctx := context.WithValue(r.Context(), BoardCtx, b)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
