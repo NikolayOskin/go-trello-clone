@@ -18,7 +18,7 @@ func (a *App) InitRouting() {
 		ctrl := &controller.AuthController{}
 		r.Post("/sign-in", ctrl.SignIn)
 		r.Post("/sign-up", ctrl.SignUp)
-		r.With(mid.JWTCheck).Get("/verify/{code:[0-9]}", ctrl.VerifyEmail)
+		r.With(mid.JWTCheck).Put("/verify/{code:[0-9]}", ctrl.VerifyEmail)
 	})
 
 	a.Router.Route("/users", func(r chi.Router) {

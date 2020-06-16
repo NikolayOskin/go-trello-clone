@@ -2,8 +2,10 @@ package controller
 
 import (
 	"github.com/NikolayOskin/go-trello-clone/handlers"
+	mid "github.com/NikolayOskin/go-trello-clone/middleware"
 	"github.com/NikolayOskin/go-trello-clone/model"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/go-chi/chi"
 	"net/http"
 	"os"
 	"time"
@@ -43,7 +45,13 @@ func (a *AuthController) SignUp(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *AuthController) VerifyEmail(w http.ResponseWriter, r *http.Request) {
-
+	user := r.Context().Value(mid.UserCtx).(model.User)
+	code := chi.URLParam(r, "code")
+	if err := handlers.VerifyEmail(user, code); err != nil {
+		JSONResp(w, 400, &ErrResp{err.Error()})
+		return
+	}
+	JSONResp(w, 200, &Response{Message: "Verified"})
 }
 
 func (a *AuthController) generateJWTToken(user model.User) (string, error) {

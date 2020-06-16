@@ -2,11 +2,13 @@ package handlers
 
 import (
 	"context"
+	"errors"
 	"github.com/NikolayOskin/go-trello-clone/model"
 	"github.com/NikolayOskin/go-trello-clone/mongodb"
 	"github.com/go-playground/validator/v10"
 	"go.mongodb.org/mongo-driver/bson"
 	"golang.org/x/crypto/bcrypt"
+	"strconv"
 )
 
 func Authenticate(requested *model.User) error {
@@ -25,5 +27,28 @@ func Authenticate(requested *model.User) error {
 	}
 	requested.ID = user.ID
 
+	return nil
+}
+
+func VerifyEmail(u model.User, code string) error {
+	var user model.User
+	if code == "" {
+		return errors.New("code must not be empty")
+	}
+	rCode, err := strconv.Atoi(code)
+	if err != nil {
+		return err
+	}
+	col := mongodb.Client.Database("trello").Collection("users")
+	if err := col.FindOne(context.TODO(), bson.M{"_id": u.ID}).Decode(&user); err != nil {
+		return err
+	}
+	if user.VerificationCode != rCode {
+		return errors.New("verification code is not correct")
+	}
+	user.Verified = true
+	if _, err := col.UpdateOne(context.TODO(), bson.M{"_id": u.ID}, bson.M{"$set": user}); err != nil {
+		return err
+	}
 	return nil
 }
