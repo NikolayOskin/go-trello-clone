@@ -8,4 +8,10 @@ const (
 
 	//BoardCtx is a context key for board object
 	BoardCtx ctxKey = "BoardEntry"
+
+	//CardCtx is a context key for card object
+	CardCtx ctxKey = "CardEntry"
+
+	//ListCtx is a context key for list object
+	ListCtx ctxKey = "ListEntry"
 )
