@@ -25,11 +25,12 @@ func (a *App) InitRouting() {
 		r.Use(mid.JWTCheck)
 		ctrl := &controller.UserController{}
 		r.Get("/me", ctrl.GetAuthUser)
-		r.Get("/me/boards", ctrl.GetBoards)
+		r.With(mid.Verified).Get("/me/boards", ctrl.GetBoards)
 	})
 
 	a.Router.Route("/boards", func(r chi.Router) {
 		r.Use(mid.JWTCheck)
+		r.Use(mid.Verified)
 		ctrl := &controller.BoardController{}
 		r.Post("/", ctrl.Create)
 		r.With(mid.DecodeBoardObj).Put("/{id:[a-z0-9]{24}}", ctrl.Update)
@@ -37,6 +38,7 @@ func (a *App) InitRouting() {
 
 	a.Router.Route("/cards", func(r chi.Router) {
 		r.Use(mid.JWTCheck)
+		r.Use(mid.Verified)
 		ctrl := &controller.CardController{}
 		r.Post("/", ctrl.Create)
 		r.With(mid.DecodeCardObj).Put("/{id:[a-z0-9]{24}}", ctrl.Update)
@@ -45,6 +47,7 @@ func (a *App) InitRouting() {
 
 	a.Router.Route("/lists", func(r chi.Router) {
 		r.Use(mid.JWTCheck)
+		r.Use(mid.Verified)
 		ctrl := &controller.ListController{}
 		r.Post("/", ctrl.Create)
 		r.With(mid.DecodeListObj).Put("/{id:[a-z0-9]{24}}", ctrl.Update)
