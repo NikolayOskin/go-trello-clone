@@ -23,6 +23,7 @@ func (a *App) InitRouting() {
 
 	a.Router.Route("/users", func(r chi.Router) {
 		r.Use(mid.JWTCheck)
+		r.Use(mid.Verified)
 		ctrl := &controller.UserController{}
 		r.Get("/me", ctrl.GetAuthUser)
 		r.With(mid.Verified).Get("/me/boards", ctrl.GetBoards)
@@ -33,6 +34,7 @@ func (a *App) InitRouting() {
 		r.Use(mid.Verified)
 		ctrl := &controller.BoardController{}
 		r.Post("/", ctrl.Create)
+		r.With(mid.DecodeBoardObj).Get("/{id:[a-z0-9]{24}}", ctrl.GetFull)
 		r.With(mid.DecodeBoardObj).Put("/{id:[a-z0-9]{24}}", ctrl.Update)
 	})
 

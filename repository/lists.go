@@ -23,3 +23,18 @@ func (l *Lists) GetById(id string) (*model.List, error) {
 
 	return &list, nil
 }
+
+func (l *Lists) GetByBoardId(id string) ([]model.List, error) {
+	var lists []model.List
+	col := mongodb.Client.Database("trello").Collection("lists")
+	filter := bson.D{{"board_id", id}}
+	cursor, err := col.Find(context.TODO(), filter)
+	if err != nil {
+		return nil, err
+	}
+	if err = cursor.All(context.TODO(), &lists); err != nil {
+		return nil, err
+	}
+
+	return lists, nil
+}
