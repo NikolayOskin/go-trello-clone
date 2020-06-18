@@ -6,41 +6,35 @@ import (
 	"github.com/NikolayOskin/go-trello-clone/mongodb"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"log"
 )
 
 type Boards struct{}
 
-func (b *Boards) FetchByUser(user model.User) []model.Board {
+func (b *Boards) FetchByUser(user model.User) ([]model.Board, error) {
 	var boards []model.Board
-
-	collection := mongodb.Client.Database("trello").Collection("boards")
+	col := mongodb.Client.Database("trello").Collection("boards")
 	filter := bson.D{{"user_id", user.ID.Hex()}}
-
-	cursor, err := collection.Find(context.TODO(), filter)
+	cursor, err := col.Find(context.TODO(), filter)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
-
 	if err = cursor.All(context.TODO(), &boards); err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
-	return boards
+	return boards, nil
 }
 
 func (b *Boards) GetById(id string) (*model.Board, error) {
 	var board model.Board
-
-	collection := mongodb.Client.Database("trello").Collection("boards")
-
+	col := mongodb.Client.Database("trello").Collection("boards")
 	objId, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return nil, err
 	}
-
-	if err := collection.FindOne(context.TODO(), bson.M{"_id": objId}).Decode(&board); err != nil {
+	if err := col.FindOne(context.TODO(), bson.M{"_id": objId}).Decode(&board); err != nil {
 		return nil, err
 	}
+
 	return &board, nil
 }
