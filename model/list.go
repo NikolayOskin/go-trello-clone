@@ -8,5 +8,5 @@ type List struct {
 	BoardId  string             `json:"board_id" bson:"board_id" validate:"required"`
 	UserId   string             `json:"user_id" bson:"user_id"` // taken from JWT token
 	Position uint               `json:"pos" bson:"pos" validate:"required"`
-	Cards    []Card
+	Cards    []Card             `json:"cards"`
 }
