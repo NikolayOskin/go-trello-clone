@@ -14,7 +14,8 @@ type BoardController struct{}
 
 func (b *BoardController) GetFull(w http.ResponseWriter, r *http.Request) {
 	boardCtx := r.Context().Value(mid.BoardCtx).(model.Board)
-	board, err := repository.Boards{}.GetById(chi.URLParam(r, "id"))
+	boardRepo := repository.Boards{}
+	board, err := boardRepo.GetById(chi.URLParam(r, "id"))
 	if err != nil {
 		JSONResp(w, 500, &ErrResp{Message: "Server error"})
 		return
@@ -23,26 +24,28 @@ func (b *BoardController) GetFull(w http.ResponseWriter, r *http.Request) {
 		JSONResp(w, 404, &ErrResp{Message: "Not found"})
 		return
 	}
-	cards, err := repository.Cards{}.GetByBoardId(board.ID.Hex())
+	cardsRepo := repository.Cards{}
+	cards, err := cardsRepo.GetByBoardId(board.ID.Hex())
 	if err != nil {
 		JSONResp(w, 500, &ErrResp{Message: err.Error()})
 		return
 	}
 	m := make(map[string][]model.Card)
 	for _, card := range cards {
-		if lCards, ok := m[card.ListId]; ok == true {
-			lCards = append(lCards, card)
+		if _, ok := m[card.ListId]; ok == true {
+			m[card.ListId] = append(m[card.ListId], card)
 		} else {
-			lCards = []model.Card{card}
+			m[card.ListId] = []model.Card{card}
 		}
 	}
-	lists, err := repository.Lists{}.GetByBoardId(board.ID.Hex())
+	listsRepo := repository.Lists{}
+	lists, err := listsRepo.GetByBoardId(board.ID.Hex())
 	if err != nil {
 		JSONResp(w, 500, &ErrResp{Message: err.Error()})
 		return
 	}
-	for _, list := range lists {
-		list.Cards = m[list.ID.Hex()]
+	for i, list := range lists {
+		lists[i].Cards = m[list.ID.Hex()]
 	}
 	board.Lists = lists
 
