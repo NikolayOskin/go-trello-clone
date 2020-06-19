@@ -17,10 +17,10 @@ func (u *UserController) GetAuthUser(w http.ResponseWriter, r *http.Request) {
 		JSONResp(w, 500, &ErrResp{Message: "Could not fetch user"})
 	}
 	if user != nil {
-		user.Password = ""
+		userCtx.Verified = user.Verified
 	}
 
-	JSONResp(w, 200, user)
+	JSONResp(w, 200, userCtx)
 }
 
 func (u *UserController) GetBoards(w http.ResponseWriter, r *http.Request) {
