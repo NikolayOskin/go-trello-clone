@@ -10,7 +10,16 @@ import (
 type UserController struct{}
 
 func (u *UserController) GetAuthUser(w http.ResponseWriter, r *http.Request) {
-	user := r.Context().Value(mid.UserCtx).(model.User)
+	userCtx := r.Context().Value(mid.UserCtx).(model.User)
+	repo := repository.Users{}
+	user, err := repo.GetById(userCtx.ID.Hex())
+	if err != nil {
+		JSONResp(w, 500, &ErrResp{Message: "Could not fetch user"})
+	}
+	if user != nil {
+		user.Password = ""
+	}
+
 	JSONResp(w, 200, user)
 }
 
