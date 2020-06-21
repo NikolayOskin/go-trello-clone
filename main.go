@@ -12,7 +12,7 @@ func main() {
 	mongodb.InitDB()
 	a.InitRouting()
 
-	err := http.ListenAndServe(":3000", a.Router)
+	err := http.ListenAndServe(":3001", a.Router)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
