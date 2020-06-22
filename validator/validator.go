@@ -13,8 +13,11 @@ var (
 	Trans ut.Translator
 )
 
-func init() {
+func New() *validator.Validate {
 	var found bool
+
+	v := validator.New()
+
 	translator := en.New()
 	uni = ut.New(translator, translator)
 
@@ -22,10 +25,6 @@ func init() {
 	if !found {
 		log.Fatal("translator not found")
 	}
-}
-
-func New() *validator.Validate {
-	v := validator.New()
 
 	if err := en_translations.RegisterDefaultTranslations(v, Trans); err != nil {
 		log.Fatal(err)
