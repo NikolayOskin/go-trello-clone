@@ -4,11 +4,13 @@ services:
     container_name: mongodb
     image: mongo:latest
     environment:
+      MONGO_INITDB_DATABASE: admin
       MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: rootpassword
+      MONGO_INITDB_ROOT_PASSWORD: root
     ports:
       - 27017:27017
     volumes:
+      - ./mongodb/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
       - mongodata:/data/db
   golang:
     container_name: golang
@@ -17,7 +19,8 @@ services:
     build:
       context: ./golang
     ports:
-      - 3000:3000
+      - 3001:3001
+      - 8082:8082
     volumes:
       - ../:/app
     environment:
