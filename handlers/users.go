@@ -9,6 +9,7 @@ import (
 	"github.com/NikolayOskin/go-trello-clone/mongodb"
 	v "github.com/NikolayOskin/go-trello-clone/validator"
 	"github.com/go-playground/validator/v10"
+	"go.mongodb.org/mongo-driver/bson"
 
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc"
@@ -19,11 +20,16 @@ import (
 )
 
 func CreateUser(user model.User) error {
+	var u model.User
 	validate := v.New()
 	if err := validate.Struct(user); err != nil {
 		for _, e := range err.(validator.ValidationErrors) {
 			return errors.New(e.Translate(v.Trans))
 		}
+	}
+	col := mongodb.Client.Database("trello").Collection("users")
+	if err := col.FindOne(context.TODO(), bson.M{"email": user.Email}).Decode(&u); err == nil {
+		return errors.New("user with this email already exists")
 	}
 	hash, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.MinCost)
 	if err != nil {
@@ -34,7 +40,6 @@ func CreateUser(user model.User) error {
 	user.Verified = false
 	user.VerificationCode = rand.Int()
 
-	col := mongodb.Client.Database("trello").Collection("users")
 	if _, err = col.InsertOne(context.TODO(), user); err != nil {
 		return err
 	}
