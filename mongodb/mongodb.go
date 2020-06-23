@@ -11,7 +11,7 @@ import (
 var Client *mongo.Client
 
 func InitDB() {
-	clientOptions := options.Client().ApplyURI("mongodb://root:rootpassword@mongodb:27017")
+	clientOptions := options.Client().ApplyURI("mongodb://root:root@mongodb:27017")
 	client, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
 		log.Fatal(err)
