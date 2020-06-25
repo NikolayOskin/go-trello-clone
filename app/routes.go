@@ -30,12 +30,11 @@ func (a *App) InitRouting() {
 		ctrl := &controller.AuthController{}
 		r.Post("/sign-in", ctrl.SignIn)
 		r.Post("/sign-up", ctrl.SignUp)
-		r.With(mid.JWTCheck).Put("/verify/{code:[0-9]}", ctrl.VerifyEmail)
+		r.With(mid.JWTCheck).Put("/verify/{code:[0-9]+}", ctrl.VerifyEmail)
 	})
 
 	a.Router.Route("/users", func(r chi.Router) {
 		r.Use(mid.JWTCheck)
-		r.Use(mid.Verified)
 		ctrl := &controller.UserController{}
 		r.Get("/me", ctrl.GetAuthUser)
 		r.With(mid.Verified).Get("/me/boards", ctrl.GetBoards)
