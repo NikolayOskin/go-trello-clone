@@ -19,6 +19,7 @@ func Verified(next http.Handler) http.Handler {
 			return
 		}
 		if u.Verified == false {
+			w.WriteHeader(http.StatusUnauthorized)
 			render.JSON(w, r, render.M{"error": "user must be verified to access this area"})
 			return
 		}
