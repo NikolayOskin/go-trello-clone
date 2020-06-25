@@ -5,14 +5,14 @@ import (
 	"errors"
 	"github.com/NikolayOskin/go-trello-clone/model"
 	"github.com/NikolayOskin/go-trello-clone/mongodb"
-	"github.com/go-playground/validator/v10"
+	v "github.com/NikolayOskin/go-trello-clone/validator"
 	"go.mongodb.org/mongo-driver/bson"
 	"golang.org/x/crypto/bcrypt"
 	"strconv"
 )
 
 func Authenticate(requested *model.User) error {
-	validate := validator.New()
+	validate := v.New()
 	if err := validate.Struct(requested); err != nil {
 		return err
 	}
