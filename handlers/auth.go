@@ -44,7 +44,7 @@ func VerifyEmail(u model.User, code string) error {
 		return err
 	}
 	if user.VerificationCode != rCode {
-		return errors.New("verification code is not correct")
+		return errors.New("incorrect verification code")
 	}
 	user.Verified = true
 	if _, err := col.UpdateOne(context.TODO(), bson.M{"_id": u.ID}, bson.M{"$set": user}); err != nil {
