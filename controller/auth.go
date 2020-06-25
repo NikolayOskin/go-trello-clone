@@ -20,7 +20,7 @@ func (a *AuthController) SignIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := handlers.Authenticate(&user); err != nil {
-		JSONResp(w, 422, &ErrResp{err.Error()})
+		JSONResp(w, 422, &ErrResp{"You have entered an invalid email or password"})
 		return
 	}
 	token, err := a.generateJWTToken(user)
