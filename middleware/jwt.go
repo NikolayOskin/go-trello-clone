@@ -28,6 +28,7 @@ func JWTCheck(next http.Handler) http.Handler {
 			return []byte(os.Getenv("JWT_SECRET")), nil
 		})
 		if err != nil {
+			w.WriteHeader(http.StatusUnauthorized)
 			render.JSON(w, r, render.M{"message": "Unauthenticated"})
 			return
 		}
