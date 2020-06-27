@@ -9,6 +9,11 @@ type Response struct {
 	Message string `json:"message,omitempty"`
 }
 
+type CreatedResponse struct {
+	Message string `json:"message,omitempty"`
+	Id      string `json:"id,omitempty"`
+}
+
 type ErrResp struct {
 	Message string `json:"error,omitempty"`
 }
