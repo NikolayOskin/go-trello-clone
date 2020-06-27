@@ -19,11 +19,12 @@ func (l *ListController) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	list.UserId = user.ID.Hex()
-	if err := handlers.CreateList(list); err != nil {
+	listId, err := handlers.CreateList(list)
+	if err != nil {
 		JSONResp(w, 500, &ErrResp{Message: "Server error"})
 		return
 	}
-	JSONResp(w, 200, &Response{Message: "Added"})
+	JSONResp(w, 200, &CreatedResponse{Message: "Added", Id: listId})
 }
 
 func (l *ListController) Update(w http.ResponseWriter, r *http.Request) {
