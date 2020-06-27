@@ -22,11 +22,12 @@ func (c *CardController) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	card.UserId = user.ID.Hex()
-	if err := handlers.CreateCard(card); err != nil {
+	cardId, err := handlers.CreateCard(card)
+	if err != nil {
 		JSONResp(w, 500, &ErrResp{Message: "Server error"})
 		return
 	}
-	JSONResp(w, 200, &Response{Message: "Added"})
+	JSONResp(w, 200, &CreatedResponse{Message: "Added", Id: cardId})
 }
 
 func (c *CardController) Update(w http.ResponseWriter, r *http.Request) {
