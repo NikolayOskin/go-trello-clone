@@ -5,6 +5,10 @@ import (
 	mid "github.com/NikolayOskin/go-trello-clone/middleware"
 	"github.com/NikolayOskin/go-trello-clone/model"
 	"github.com/NikolayOskin/go-trello-clone/repository"
+
+	//"github.com/NikolayOskin/go-trello-clone/repository"
+
+	//"github.com/NikolayOskin/go-trello-clone/repository"
 	"github.com/go-chi/chi"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
@@ -13,14 +17,14 @@ import (
 type BoardController struct{}
 
 func (b *BoardController) GetFull(w http.ResponseWriter, r *http.Request) {
-	boardCtx := r.Context().Value(mid.BoardCtx).(model.Board)
+	userCtx := r.Context().Value(mid.UserCtx).(model.User)
 	boardRepo := repository.Boards{}
 	board, err := boardRepo.GetById(chi.URLParam(r, "id"))
 	if err != nil {
 		JSONResp(w, 500, &ErrResp{Message: "Server error"})
 		return
 	}
-	if board == nil || board.UserId != boardCtx.UserId {
+	if board == nil || board.UserId != userCtx.ID.Hex() {
 		JSONResp(w, 404, &ErrResp{Message: "Not found"})
 		return
 	}
@@ -30,6 +34,7 @@ func (b *BoardController) GetFull(w http.ResponseWriter, r *http.Request) {
 		JSONResp(w, 500, &ErrResp{Message: err.Error()})
 		return
 	}
+
 	m := make(map[string][]model.Card)
 	for _, card := range cards {
 		if _, ok := m[card.ListId]; ok == true {
