@@ -10,20 +10,21 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func CreateList(list model.List) error {
+func CreateList(list model.List) (string, error) {
 	repo := repository.Boards{}
 	board, err := repo.GetById(list.BoardId)
 	if err != nil {
-		return err
+		return "", err
 	}
 	if board == nil || board.UserId != list.UserId {
-		return errors.New("board for this user does not exist")
+		return "", errors.New("board for this user does not exist")
 	}
 	col := mongodb.Client.Database("trello").Collection("lists")
-	if _, err := col.InsertOne(context.TODO(), list); err != nil {
-		return err
+	res, err := col.InsertOne(context.TODO(), list)
+	if err != nil {
+		return "", err
 	}
-	return nil
+	return res.InsertedID.(primitive.ObjectID).Hex(), nil
 }
 
 func UpdateList(l model.List) error {
