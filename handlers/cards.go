@@ -7,23 +7,25 @@ import (
 	"github.com/NikolayOskin/go-trello-clone/mongodb"
 	"github.com/NikolayOskin/go-trello-clone/repository"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func CreateCard(c model.Card) error {
+func CreateCard(c model.Card) (string, error) {
 	repo := repository.Lists{}
 	list, err := repo.GetById(c.ListId)
 	if err != nil {
-		return err
+		return "", err
 	}
 	if list == nil || list.UserId != c.UserId {
-		return errors.New("list for your user does not exist")
+		return "", errors.New("list for your user does not exist")
 	}
 	c.BoardId = list.BoardId
 	col := mongodb.Client.Database("trello").Collection("cards")
-	if _, err = col.InsertOne(context.TODO(), c); err != nil {
-		return err
+	res, err := col.InsertOne(context.TODO(), c)
+	if err != nil {
+		return "", err
 	}
-	return nil
+	return res.InsertedID.(primitive.ObjectID).Hex(), nil
 }
 
 func UpdateCard(c model.Card) error {
