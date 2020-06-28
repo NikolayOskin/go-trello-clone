@@ -50,7 +50,11 @@ func (b *BoardController) GetFull(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	for i, list := range lists {
-		lists[i].Cards = m[list.ID.Hex()]
+		if m[list.ID.Hex()] == nil {
+			lists[i].Cards = make([]model.Card, 0)
+		} else {
+			lists[i].Cards = m[list.ID.Hex()]
+		}
 	}
 	board.Lists = lists
 
