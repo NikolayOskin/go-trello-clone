@@ -6,14 +6,16 @@ import (
 	"github.com/NikolayOskin/go-trello-clone/mongodb"
 	"github.com/NikolayOskin/go-trello-clone/repository"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func CreateBoard(b model.Board) error {
+func CreateBoard(b model.Board) (string, error) {
 	col := mongodb.Client.Database("trello").Collection("boards")
-	if _, err := col.InsertOne(context.TODO(), b); err != nil {
-		return err
+	res, err := col.InsertOne(context.TODO(), b)
+	if err != nil {
+		return "", err
 	}
-	return nil
+	return res.InsertedID.(primitive.ObjectID).Hex(), nil
 }
 
 func UpdateBoard(b model.Board) error {
