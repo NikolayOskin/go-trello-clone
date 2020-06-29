@@ -16,24 +16,30 @@ func JWTCheck(next http.Handler) http.Handler {
 		tokenString := r.Header.Get("Authorization")
 
 		if len(tokenString) == 0 {
+			w.WriteHeader(http.StatusUnauthorized)
 			render.JSON(w, r, render.M{"message": "Unauthenticated"})
 			return
 		}
 
 		cl := model.JWTClaims{}
-		_, err := jwt.ParseWithClaims(tokenString, &cl, func(token *jwt.Token) (interface{}, error) {
+
+		token, err := jwt.ParseWithClaims(tokenString, &cl, func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, errors.New("unexpected signing method")
 			}
 			return []byte(os.Getenv("JWT_SECRET")), nil
 		})
-		if err != nil {
+		if token == nil || err != nil {
+			w.WriteHeader(http.StatusUnauthorized)
+			render.JSON(w, r, render.M{"message": "Unauthenticated"})
+			return
+		}
+		if _, ok := token.Claims.(*model.JWTClaims); ok && !token.Valid {
 			w.WriteHeader(http.StatusUnauthorized)
 			render.JSON(w, r, render.M{"message": "Unauthenticated"})
 			return
 		}
 		ctx = context.WithValue(r.Context(), UserCtx, cl.User)
-
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
