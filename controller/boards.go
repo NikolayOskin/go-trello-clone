@@ -28,36 +28,10 @@ func (b *BoardController) GetFull(w http.ResponseWriter, r *http.Request) {
 		JSONResp(w, 404, &ErrResp{Message: "Not found"})
 		return
 	}
-	cardsRepo := repository.Cards{}
-	cards, err := cardsRepo.GetByBoardId(board.ID.Hex())
-	if err != nil {
+	if err := handlers.FillBoardWithListsAndCards(board); err != nil {
 		JSONResp(w, 500, &ErrResp{Message: err.Error()})
 		return
 	}
-
-	m := make(map[string][]model.Card)
-	for _, card := range cards {
-		if _, ok := m[card.ListId]; ok == true {
-			m[card.ListId] = append(m[card.ListId], card)
-		} else {
-			m[card.ListId] = []model.Card{card}
-		}
-	}
-	listsRepo := repository.Lists{}
-	lists, err := listsRepo.GetByBoardId(board.ID.Hex())
-	if err != nil {
-		JSONResp(w, 500, &ErrResp{Message: err.Error()})
-		return
-	}
-	for i, list := range lists {
-		if m[list.ID.Hex()] == nil {
-			lists[i].Cards = make([]model.Card, 0)
-		} else {
-			lists[i].Cards = m[list.ID.Hex()]
-		}
-	}
-	board.Lists = lists
-
 	JSONResp(w, 200, board)
 }
 
