@@ -60,7 +60,7 @@ func (b *BoardController) Update(w http.ResponseWriter, r *http.Request) {
 	}
 	board.ID = id
 	if err := handlers.UpdateBoard(board); err != nil {
-		JSONResp(w, 200, &ErrResp{Message: "Server error"})
+		JSONResp(w, 500, &ErrResp{Message: "Server error"})
 		return
 	}
 	JSONResp(w, 200, &Response{Message: "Updated"})
