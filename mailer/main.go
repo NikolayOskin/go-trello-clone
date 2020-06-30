@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	pb "github.com/NikolayOskin/go-trello-clone/mailer/mailerpkg"
-	"github.com/mailgun/mailgun-go"
+	"github.com/mailgun/mailgun-go/v4"
 	"google.golang.org/grpc"
 	"html/template"
 	"log"
@@ -25,15 +25,11 @@ type EmailConfirmMessage struct {
 
 func (s *GRPCServer) SendEmail(ctx context.Context, r *pb.EmailRequest) (*pb.EmailResponse, error) {
 	m := &EmailConfirmMessage{r.Code, "signup-confirm.html"}
-
 	var buf bytes.Buffer
 	err := tpl.ExecuteTemplate(&buf, m.tplname, m)
 	if err != nil {
 		log.Fatalf("failed to execute template: %v", err)
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*4)
-	defer cancel()
-
 	if err = sendToMailgun("Thanks for registration!", buf.String(), r.Email); err != nil {
 		return &pb.EmailResponse{Sent: false}, nil
 	}
@@ -42,9 +38,13 @@ func (s *GRPCServer) SendEmail(ctx context.Context, r *pb.EmailRequest) (*pb.Ema
 }
 
 func sendToMailgun(s string, body string, toEmail string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*4)
+	defer cancel()
+
 	message := mg.NewMessage(os.Getenv("MAILER_SENDER"), s, "", toEmail)
 	message.SetHtml(body)
-	_, _, err := mg.Send(message)
+
+	_, _, err := mg.Send(ctx, message)
 	if err != nil {
 		return err
 	}
