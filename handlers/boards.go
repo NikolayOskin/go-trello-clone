@@ -10,8 +10,7 @@ import (
 )
 
 func CreateBoard(b model.Board) (string, error) {
-	col := mongodb.Client.Database("trello").Collection("boards")
-	res, err := col.InsertOne(context.TODO(), b)
+	res, err := mongodb.Boards.InsertOne(context.TODO(), b)
 	if err != nil {
 		return "", err
 	}
@@ -19,9 +18,8 @@ func CreateBoard(b model.Board) (string, error) {
 }
 
 func UpdateBoard(b model.Board) error {
-	col := mongodb.Client.Database("trello").Collection("boards")
 	f := bson.M{"_id": b.ID, "user_id": b.UserId}
-	if _, err := col.UpdateOne(context.TODO(), f, bson.M{"$set": b}); err != nil {
+	if _, err := mongodb.Boards.UpdateOne(context.TODO(), f, bson.M{"$set": b}); err != nil {
 		return err
 	}
 	return nil

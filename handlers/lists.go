@@ -19,8 +19,7 @@ func CreateList(list model.List) (string, error) {
 	if board == nil || board.UserId != list.UserId {
 		return "", errors.New("board for this user does not exist")
 	}
-	col := mongodb.Client.Database("trello").Collection("lists")
-	res, err := col.InsertOne(context.TODO(), list)
+	res, err := mongodb.Lists.InsertOne(context.TODO(), list)
 	if err != nil {
 		return "", err
 	}
@@ -28,9 +27,8 @@ func CreateList(list model.List) (string, error) {
 }
 
 func UpdateList(l model.List) error {
-	col := mongodb.Client.Database("trello").Collection("lists")
 	f := bson.M{"_id": l.ID, "user_id": l.UserId}
-	if _, err := col.UpdateOne(context.TODO(), f, bson.M{"$set": l}); err != nil {
+	if _, err := mongodb.Lists.UpdateOne(context.TODO(), f, bson.M{"$set": l}); err != nil {
 		return err
 	}
 	return nil
@@ -38,14 +36,12 @@ func UpdateList(l model.List) error {
 
 func DeleteList(listId primitive.ObjectID, u model.User) error {
 	// first deleting cards associated with list, then delete list
-	cardsCol := mongodb.Client.Database("trello").Collection("cards")
 	f := bson.M{"list_id": listId.Hex(), "user_id": u.ID.Hex()}
-	if _, err := cardsCol.DeleteMany(context.TODO(), f); err != nil {
+	if _, err := mongodb.Cards.DeleteMany(context.TODO(), f); err != nil {
 		return err
 	}
-	listsCol := mongodb.Client.Database("trello").Collection("lists")
 	f = bson.M{"_id": listId, "user_id": u.ID.Hex()}
-	if _, err := listsCol.DeleteOne(context.TODO(), f); err != nil {
+	if _, err := mongodb.Lists.DeleteOne(context.TODO(), f); err != nil {
 		return err
 	}
 	return nil

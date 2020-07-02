@@ -20,8 +20,7 @@ func CreateCard(c model.Card) (string, error) {
 		return "", errors.New("list for your user does not exist")
 	}
 	c.BoardId = list.BoardId
-	col := mongodb.Client.Database("trello").Collection("cards")
-	res, err := col.InsertOne(context.TODO(), c)
+	res, err := mongodb.Cards.InsertOne(context.TODO(), c)
 	if err != nil {
 		return "", err
 	}
@@ -29,9 +28,8 @@ func CreateCard(c model.Card) (string, error) {
 }
 
 func UpdateCard(c model.Card) error {
-	col := mongodb.Client.Database("trello").Collection("cards")
 	filter := bson.M{"_id": c.ID, "user_id": c.UserId}
-	if _, err := col.UpdateOne(context.TODO(), filter, bson.M{"$set": c}); err != nil {
+	if _, err := mongodb.Cards.UpdateOne(context.TODO(), filter, bson.M{"$set": c}); err != nil {
 		return err
 	}
 	return nil

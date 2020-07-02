@@ -27,8 +27,7 @@ func CreateUser(user model.User) error {
 			return errors.New(e.Translate(v.Trans))
 		}
 	}
-	col := mongodb.Client.Database("trello").Collection("users")
-	if err := col.FindOne(context.TODO(), bson.M{"email": user.Email}).Decode(&u); err == nil {
+	if err := mongodb.Users.FindOne(context.TODO(), bson.M{"email": user.Email}).Decode(&u); err == nil {
 		return errors.New("user with this email already exists")
 	}
 	hash, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.MinCost)
@@ -40,25 +39,27 @@ func CreateUser(user model.User) error {
 	user.Verified = false
 	user.VerificationCode = rand.Int()
 
-	if _, err = col.InsertOne(context.TODO(), user); err != nil {
+	if _, err = mongodb.Users.InsertOne(context.TODO(), user); err != nil {
 		return err
 	}
 
-	if err = sendCode(user.VerificationCode, user.Email); err != nil {
+	if err = SendCode(user.VerificationCode, user.Email); err != nil {
 		fmt.Println(err)
 	}
 
 	return nil
 }
 
-func sendCode(code int, email string) error {
+func SendCode(code int, email string) error {
 	conn, err := grpc.Dial(os.Getenv("MAILER_SERVICE_PORT"), grpc.WithInsecure())
 	if err != nil {
 		return err
 	}
+	defer conn.Close()
+
 	c := pb.NewMailerClient(conn)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 
 	_, err = c.SendEmail(ctx, &pb.EmailRequest{Email: email, Code: strconv.Itoa(code)})
