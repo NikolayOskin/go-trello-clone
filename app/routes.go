@@ -30,6 +30,8 @@ func (a *App) InitRouting() {
 		ctrl := &controller.AuthController{}
 		r.Post("/sign-in", ctrl.SignIn)
 		r.Post("/sign-up", ctrl.SignUp)
+		r.Post("/reset-password", ctrl.ResetPassword)
+		r.Post("/new-password", ctrl.ResetPassword)
 		r.With(mid.JWTCheck).Put("/verify/{code:[0-9]+}", ctrl.VerifyEmail)
 	})
 
@@ -44,9 +46,9 @@ func (a *App) InitRouting() {
 		r.Use(mid.JWTCheck)
 		r.Use(mid.Verified)
 		ctrl := &controller.BoardController{}
-		r.Post("/", ctrl.Create)
-		r.With(mid.DecodeBoardObj).Get("/{id:[a-z0-9]{24}}", ctrl.GetFull)
+		r.Get("/{id:[a-z0-9]+}", ctrl.GetFull)
 		r.With(mid.DecodeBoardObj).Put("/{id:[a-z0-9]{24}}", ctrl.Update)
+		r.Post("/", ctrl.Create)
 	})
 
 	a.Router.Route("/cards", func(r chi.Router) {
