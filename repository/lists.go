@@ -12,12 +12,11 @@ type Lists struct{}
 
 func (l *Lists) GetById(id string) (*model.List, error) {
 	var list model.List
-	col := mongodb.Client.Database("trello").Collection("lists")
 	objId, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return nil, err
 	}
-	if err := col.FindOne(context.TODO(), bson.M{"_id": objId}).Decode(&list); err != nil {
+	if err := mongodb.Lists.FindOne(context.TODO(), bson.M{"_id": objId}).Decode(&list); err != nil {
 		return nil, err
 	}
 
@@ -26,9 +25,8 @@ func (l *Lists) GetById(id string) (*model.List, error) {
 
 func (l *Lists) GetByBoardId(id string) ([]model.List, error) {
 	var lists []model.List
-	col := mongodb.Client.Database("trello").Collection("lists")
 	filter := bson.D{{"board_id", id}}
-	cursor, err := col.Find(context.TODO(), filter)
+	cursor, err := mongodb.Lists.Find(context.TODO(), filter)
 	if err != nil {
 		return nil, err
 	}

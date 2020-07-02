@@ -11,9 +11,8 @@ type Cards struct{}
 
 func (c *Cards) GetByBoardId(id string) ([]model.Card, error) {
 	var cards []model.Card
-	col := mongodb.Client.Database("trello").Collection("cards")
 	filter := bson.D{{"board_id", id}}
-	cursor, err := col.Find(context.TODO(), filter)
+	cursor, err := mongodb.Cards.Find(context.TODO(), filter)
 	if err != nil {
 		return nil, err
 	}

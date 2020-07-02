@@ -12,12 +12,11 @@ type Users struct{}
 
 func (b *Users) GetById(id string) (*model.User, error) {
 	var user model.User
-	col := mongodb.Client.Database("trello").Collection("users")
 	objId, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return nil, err
 	}
-	if err := col.FindOne(context.TODO(), bson.M{"_id": objId}).Decode(&user); err != nil {
+	if err := mongodb.Users.FindOne(context.TODO(), bson.M{"_id": objId}).Decode(&user); err != nil {
 		return nil, err
 	}
 

@@ -12,9 +12,8 @@ type Boards struct{}
 
 func (b *Boards) FetchByUser(user model.User) ([]model.Board, error) {
 	var boards []model.Board
-	col := mongodb.Client.Database("trello").Collection("boards")
 	filter := bson.D{{"user_id", user.ID.Hex()}}
-	cursor, err := col.Find(context.TODO(), filter)
+	cursor, err := mongodb.Boards.Find(context.TODO(), filter)
 	if err != nil {
 		return nil, err
 	}
@@ -27,12 +26,11 @@ func (b *Boards) FetchByUser(user model.User) ([]model.Board, error) {
 
 func (b *Boards) GetById(id string) (*model.Board, error) {
 	var board model.Board
-	col := mongodb.Client.Database("trello").Collection("boards")
 	objId, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return nil, err
 	}
-	if err := col.FindOne(context.TODO(), bson.M{"_id": objId}).Decode(&board); err != nil {
+	if err := mongodb.Boards.FindOne(context.TODO(), bson.M{"_id": objId}).Decode(&board); err != nil {
 		return nil, err
 	}
 
