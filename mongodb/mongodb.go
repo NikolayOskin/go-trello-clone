@@ -6,6 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
+	"os"
 )
 
 var Client *mongo.Client
@@ -15,7 +16,11 @@ var Lists *mongo.Collection
 var Cards *mongo.Collection
 
 func InitDB() {
-	clientOptions := options.Client().ApplyURI("mongodb://root:root@mongodb:27017")
+	login := os.Getenv("MONGODB_LOGIN")
+	pass := os.Getenv("MONGODB_PASSWORD")
+	host := os.Getenv("MONGODB_HOST")
+	port := os.Getenv("MONGODB_PORT")
+	clientOptions := options.Client().ApplyURI(fmt.Sprintf("mongodb://%v:%v@%v:%v", login, pass, host, port))
 	client, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
 		log.Fatal(err)
