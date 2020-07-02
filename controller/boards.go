@@ -48,7 +48,7 @@ func (b *BoardController) Create(w http.ResponseWriter, r *http.Request) {
 		JSONResp(w, 500, &ErrResp{Message: "Server error"})
 		return
 	}
-	JSONResp(w, 200, &CreatedResponse{Message: "Added", Id: boardId})
+	JSONResp(w, 201, &CreatedResponse{Message: "Created", Id: boardId})
 }
 
 func (b *BoardController) Update(w http.ResponseWriter, r *http.Request) {

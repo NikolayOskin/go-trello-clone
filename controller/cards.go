@@ -27,7 +27,7 @@ func (c *CardController) Create(w http.ResponseWriter, r *http.Request) {
 		JSONResp(w, 500, &ErrResp{Message: "Server error"})
 		return
 	}
-	JSONResp(w, 200, &CreatedResponse{Message: "Added", Id: cardId})
+	JSONResp(w, 201, &CreatedResponse{Message: "Created", Id: cardId})
 }
 
 func (c *CardController) Update(w http.ResponseWriter, r *http.Request) {

@@ -24,7 +24,7 @@ func (l *ListController) Create(w http.ResponseWriter, r *http.Request) {
 		JSONResp(w, 500, &ErrResp{Message: "Server error"})
 		return
 	}
-	JSONResp(w, 200, &CreatedResponse{Message: "Added", Id: listId})
+	JSONResp(w, 201, &CreatedResponse{Message: "Created", Id: listId})
 }
 
 func (l *ListController) Update(w http.ResponseWriter, r *http.Request) {

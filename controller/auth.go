@@ -41,7 +41,7 @@ func (a *AuthController) SignUp(w http.ResponseWriter, r *http.Request) {
 		JSONResp(w, 400, &ErrResp{err.Error()})
 		return
 	}
-	JSONResp(w, 200, &Response{Message: "Success"})
+	JSONResp(w, 201, &Response{Message: "Created"})
 }
 
 func (a *AuthController) VerifyEmail(w http.ResponseWriter, r *http.Request) {
