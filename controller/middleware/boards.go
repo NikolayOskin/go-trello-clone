@@ -3,8 +3,8 @@ package middleware
 import (
 	"context"
 	"github.com/NikolayOskin/go-trello-clone/model"
+	"github.com/NikolayOskin/go-trello-clone/service/validator"
 	"github.com/go-chi/render"
-	"github.com/go-playground/validator/v10"
 	"net/http"
 )
 

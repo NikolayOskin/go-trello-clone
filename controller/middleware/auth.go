@@ -13,8 +13,8 @@ func Verified(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var u model.User
 		jwtUser := r.Context().Value(UserCtx).(model.User)
-		col := mongodb.Client.Database("trello").Collection("users")
-		if err := col.FindOne(context.TODO(), bson.M{"_id": jwtUser.ID}).Decode(&u); err != nil {
+		if err := mongodb.Users.FindOne(context.TODO(), bson.M{"_id": jwtUser.ID}).Decode(&u); err != nil {
+			w.WriteHeader(http.StatusUnauthorized)
 			render.JSON(w, r, render.M{"error": err.Error()})
 			return
 		}
