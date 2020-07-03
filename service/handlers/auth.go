@@ -6,27 +6,26 @@ import (
 	"fmt"
 	"github.com/NikolayOskin/go-trello-clone/model"
 	"github.com/NikolayOskin/go-trello-clone/mongodb"
-	v "github.com/NikolayOskin/go-trello-clone/validator"
+	v "github.com/NikolayOskin/go-trello-clone/service/validator"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
-	"math/rand"
-	"strconv"
 )
 
-func Authenticate(requested *model.User) error {
+func Authenticate(reqUser *model.User) error {
 	validate := v.New()
-	if err := validate.Struct(requested); err != nil {
+	if err := validate.Struct(reqUser); err != nil {
 		return err
 	}
 	var user model.User
-	filter := bson.M{"email": requested.Email}
+	filter := bson.M{"email": reqUser.Email}
 	if err := mongodb.Users.FindOne(context.TODO(), filter).Decode(&user); err != nil {
-		return err
+		return errors.New("invalid credentials")
 	}
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(requested.Password)); err != nil {
-		return err
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(reqUser.Password)); err != nil {
+		return errors.New("invalid credentials")
 	}
-	requested.ID = user.ID
+	reqUser.ID = user.ID
 
 	return nil
 }
@@ -36,14 +35,10 @@ func VerifyEmail(u model.User, code string) error {
 	if code == "" {
 		return errors.New("code must not be empty")
 	}
-	rCode, err := strconv.Atoi(code)
-	if err != nil {
-		return err
-	}
 	if err := mongodb.Users.FindOne(context.TODO(), bson.M{"_id": u.ID}).Decode(&user); err != nil {
 		return err
 	}
-	if user.VerificationCode != rCode {
+	if user.VerificationCode != code {
 		return errors.New("incorrect verification code")
 	}
 	user.Verified = true
@@ -58,7 +53,7 @@ func ResetPassword(email string) error {
 	if err := mongodb.Users.FindOne(context.TODO(), bson.M{"email": email}).Decode(&u); err != nil {
 		return errors.New("user with this email does not exist")
 	}
-	u.ResetPasswordCode = rand.Int()
+	u.ResetPasswordCode = primitive.NewObjectID().Hex()
 	_, err := mongodb.Users.UpdateOne(context.TODO(), bson.M{"email": email},
 		bson.D{
 			{"$set", bson.D{{"reset_password_code", u.ResetPasswordCode}}},
@@ -70,5 +65,27 @@ func ResetPassword(email string) error {
 		fmt.Println(err)
 	}
 
+	return nil
+}
+
+func SetNewPassword(email string, code string, password string) error {
+	var u model.User
+	if err := mongodb.Users.FindOne(context.TODO(), bson.M{"email": email}).Decode(&u); err != nil {
+		return errors.New("user with this email does not exist")
+	}
+	if u.ResetPasswordCode != code {
+		return errors.New("invalid credentials")
+	}
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.MinCost)
+	if err != nil {
+		return err
+	}
+	_, err = mongodb.Users.UpdateOne(context.TODO(), bson.M{"email": email},
+		bson.D{
+			{"$set", bson.D{{"password", string(hash)}}},
+		})
+	if err != nil {
+		return err
+	}
 	return nil
 }

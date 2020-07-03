@@ -4,7 +4,7 @@ import (
 	"github.com/go-playground/locales/en"
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
-	en_translations "github.com/go-playground/validator/v10/translations/en"
+	entranslations "github.com/go-playground/validator/v10/translations/en"
 	"log"
 )
 
@@ -26,7 +26,7 @@ func New() *validator.Validate {
 		log.Fatal("translator not found")
 	}
 
-	if err := en_translations.RegisterDefaultTranslations(v, Trans); err != nil {
+	if err := entranslations.RegisterDefaultTranslations(v, Trans); err != nil {
 		log.Fatal(err)
 	}
 

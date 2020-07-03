@@ -28,7 +28,25 @@ func CreateCard(c model.Card) (string, error) {
 }
 
 func UpdateCard(c model.Card) error {
-	filter := bson.M{"_id": c.ID, "user_id": c.UserId}
+	cardsRepo := repository.Cards{}
+	listsRepo := repository.Lists{}
+
+	card, err := cardsRepo.GetById(c.ID.Hex())
+	if err != nil {
+		return err
+	}
+
+	list, err := listsRepo.GetById(c.ListId)
+	if err != nil {
+		return err
+	}
+
+	// check if user tries to update card which belongs to another user
+	if card.UserId != c.UserId || c.BoardId != card.BoardId || list.UserId != c.UserId {
+		return errors.New("board or list does not exist")
+	}
+
+	filter := bson.M{"_id": c.ID}
 	if _, err := mongodb.Cards.UpdateOne(context.TODO(), filter, bson.M{"$set": c}); err != nil {
 		return err
 	}
