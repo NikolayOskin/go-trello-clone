@@ -18,34 +18,29 @@ type GRPCServer struct{}
 var mg *mailgun.MailgunImpl
 var tpl *template.Template
 
-type EmailConfirmMessage struct {
+type VerifyEmail struct {
 	VerificationCode string
 	tplname          string
 }
 
 func (s *GRPCServer) SendEmail(ctx context.Context, r *pb.EmailRequest) (*pb.EmailResponse, error) {
-	m := &EmailConfirmMessage{r.Code, "signup-confirm.html"}
+	m := &VerifyEmail{r.Code, "signup-confirm.html"}
 	var buf bytes.Buffer
-	err := tpl.ExecuteTemplate(&buf, m.tplname, m)
-	if err != nil {
+	if err := tpl.ExecuteTemplate(&buf, m.tplname, m); err != nil {
 		log.Fatalf("failed to execute template: %v", err)
 	}
-	if err = sendToMailgun("Thanks for registration!", buf.String(), r.Email); err != nil {
+	if err := sendToMailgun("Thanks for registration!", buf.String(), r.Email); err != nil {
 		return &pb.EmailResponse{Sent: false}, nil
 	}
-
 	return &pb.EmailResponse{Sent: true}, nil
 }
 
 func sendToMailgun(s string, body string, toEmail string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*4)
 	defer cancel()
-
 	message := mg.NewMessage(os.Getenv("MAILER_SENDER"), s, "", toEmail)
 	message.SetHtml(body)
-
-	_, _, err := mg.Send(ctx, message)
-	if err != nil {
+	if _, _, err := mg.Send(ctx, message); err != nil {
 		return err
 	}
 	return nil
@@ -63,8 +58,7 @@ func main() {
 	}
 	grpcServer := grpc.NewServer()
 	pb.RegisterMailerServer(grpcServer, &GRPCServer{})
-	err = grpcServer.Serve(lis)
-	if err != nil {
+	if err = grpcServer.Serve(lis); err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 }
