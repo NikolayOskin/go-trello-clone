@@ -1,9 +1,9 @@
 package controller
 
 import (
-	"github.com/NikolayOskin/go-trello-clone/handlers"
-	mid "github.com/NikolayOskin/go-trello-clone/middleware"
+	mid "github.com/NikolayOskin/go-trello-clone/controller/middleware"
 	"github.com/NikolayOskin/go-trello-clone/model"
+	"github.com/NikolayOskin/go-trello-clone/service/handlers"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/go-chi/chi"
 	"net/http"
@@ -16,11 +16,11 @@ type AuthController struct{}
 func (a *AuthController) SignIn(w http.ResponseWriter, r *http.Request) {
 	var user model.User
 	if err := decodeJSON(w, r, &user); err != nil {
-		JSONResp(w, 400, &ErrResp{err.Error()})
+		JSONResp(w, err.(*malformedRequest).Status, &ErrResp{err.Error()})
 		return
 	}
 	if err := handlers.Authenticate(&user); err != nil {
-		JSONResp(w, 422, &ErrResp{"You have entered an invalid email or password"})
+		JSONResp(w, 422, &ErrResp{err.Error()})
 		return
 	}
 	token, err := a.generateJWTToken(user)
@@ -34,7 +34,7 @@ func (a *AuthController) SignIn(w http.ResponseWriter, r *http.Request) {
 func (a *AuthController) SignUp(w http.ResponseWriter, r *http.Request) {
 	var user model.User
 	if err := decodeJSON(w, r, &user); err != nil {
-		JSONResp(w, 400, &ErrResp{err.Error()})
+		JSONResp(w, err.(*malformedRequest).Status, &ErrResp{err.Error()})
 		return
 	}
 	if err := handlers.CreateUser(user); err != nil {
@@ -52,6 +52,32 @@ func (a *AuthController) VerifyEmail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	JSONResp(w, 200, &Response{Message: "Verified"})
+}
+
+func (a *AuthController) ResetPassword(w http.ResponseWriter, r *http.Request) {
+	var request ResetPasswordRequest
+	if err := decodeJSON(w, r, &request); err != nil {
+		JSONResp(w, err.(*malformedRequest).Status, &ErrResp{err.Error()})
+		return
+	}
+	if err := handlers.ResetPassword(request.Email); err != nil {
+		JSONResp(w, 400, &ErrResp{err.Error()})
+		return
+	}
+	JSONResp(w, 200, &Response{Message: "Verification code sent"})
+}
+
+func (a *AuthController) NewPassword(w http.ResponseWriter, r *http.Request) {
+	var req NewPasswordRequest
+	if err := decodeJSON(w, r, &req); err != nil {
+		JSONResp(w, err.(*malformedRequest).Status, &ErrResp{err.Error()})
+		return
+	}
+	if err := handlers.SetNewPassword(req.Email, req.Code, req.Password); err != nil {
+		JSONResp(w, 400, &ErrResp{err.Error()})
+		return
+	}
+	JSONResp(w, 200, &Response{Message: "Password changed"})
 }
 
 func (a *AuthController) generateJWTToken(user model.User) (string, error) {
