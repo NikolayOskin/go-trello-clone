@@ -1,0 +1,17 @@
+syntax = "proto3";
+package mailer;
+option go_package = ".;mailer";
+
+service Mailer {
+    rpc SignUpEmail (EmailRequest) returns (EmailResponse) {}
+    rpc ResetPasswordEmail (EmailRequest) returns (EmailResponse) {}
+}
+
+message EmailRequest {
+    string email = 1;
+    string code = 2;
+}
+
+message EmailResponse {
+    bool sent = 1;
+}

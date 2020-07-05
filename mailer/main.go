@@ -3,7 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
-	pb "github.com/NikolayOskin/go-trello-clone/mailer/mailerpkg"
+	pb "github.com/NikolayOskin/go-trello-clone/mailer/src"
 	"github.com/mailgun/mailgun-go/v4"
 	"google.golang.org/grpc"
 	"html/template"
@@ -23,13 +23,30 @@ type VerifyEmail struct {
 	tplname          string
 }
 
-func (s *GRPCServer) SendEmail(ctx context.Context, r *pb.EmailRequest) (*pb.EmailResponse, error) {
+type ResetPasswordEmail struct {
+	VerificationCode string
+	tplname          string
+}
+
+func (s *GRPCServer) SignUpEmail(ctx context.Context, r *pb.EmailRequest) (*pb.EmailResponse, error) {
 	m := &VerifyEmail{r.Code, "signup-confirm.html"}
 	var buf bytes.Buffer
 	if err := tpl.ExecuteTemplate(&buf, m.tplname, m); err != nil {
 		log.Fatalf("failed to execute template: %v", err)
 	}
 	if err := sendToMailgun("Thanks for registration!", buf.String(), r.Email); err != nil {
+		return &pb.EmailResponse{Sent: false}, nil
+	}
+	return &pb.EmailResponse{Sent: true}, nil
+}
+
+func (s *GRPCServer) ResetPasswordEmail(ctx context.Context, r *pb.EmailRequest) (*pb.EmailResponse, error) {
+	m := &ResetPasswordEmail{r.Code, "reset-password.html"}
+	var buf bytes.Buffer
+	if err := tpl.ExecuteTemplate(&buf, m.tplname, m); err != nil {
+		log.Fatalf("failed to execute template: %v", err)
+	}
+	if err := sendToMailgun("Reset password request", buf.String(), r.Email); err != nil {
 		return &pb.EmailResponse{Sent: false}, nil
 	}
 	return &pb.EmailResponse{Sent: true}, nil
