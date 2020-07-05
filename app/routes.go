@@ -2,11 +2,11 @@ package app
 
 import (
 	"github.com/NikolayOskin/go-trello-clone/controller"
-	mid "github.com/NikolayOskin/go-trello-clone/middleware"
-
-	"github.com/go-chi/chi"
+	mid "github.com/NikolayOskin/go-trello-clone/controller/middleware"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/cors"
+
+	"github.com/go-chi/chi"
 )
 
 func (a *App) InitRouting() {
@@ -14,24 +14,14 @@ func (a *App) InitRouting() {
 
 	a.Router.Use(middleware.Logger)
 	a.Router.Use(middleware.AllowContentType("application/json"))
-
-	// Cross-origin request sharing
-	corsOpts := cors.New(cors.Options{
-		AllowedOrigins:   []string{"*"},
-		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
-		ExposedHeaders:   []string{"Link"},
-		AllowCredentials: true,
-		MaxAge:           300,
-	})
-	a.Router.Use(corsOpts.Handler)
+	a.Router.Use(getCorsOpts().Handler)
 
 	a.Router.Route("/auth", func(r chi.Router) {
 		ctrl := &controller.AuthController{}
 		r.Post("/sign-in", ctrl.SignIn)
 		r.Post("/sign-up", ctrl.SignUp)
 		r.Post("/reset-password", ctrl.ResetPassword)
-		r.Post("/new-password", ctrl.ResetPassword)
+		r.Post("/new-password", ctrl.NewPassword)
 		r.With(mid.JWTCheck).Put("/verify/{code:[0-9]+}", ctrl.VerifyEmail)
 	})
 
@@ -67,5 +57,16 @@ func (a *App) InitRouting() {
 		r.Post("/", ctrl.Create)
 		r.With(mid.DecodeListObj).Put("/{id:[a-z0-9]{24}}", ctrl.Update)
 		r.Delete("/{id:[a-z0-9]{24}}", ctrl.Delete)
+	})
+}
+
+func getCorsOpts() *cors.Cors {
+	return cors.New(cors.Options{
+		AllowedOrigins:   []string{"*"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+		ExposedHeaders:   []string{"Link"},
+		AllowCredentials: true,
+		MaxAge:           300,
 	})
 }
