@@ -7,6 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
 	"os"
+	"time"
 )
 
 var Client *mongo.Client
@@ -20,17 +21,22 @@ func InitDB() {
 	pass := os.Getenv("MONGODB_PASSWORD")
 	host := os.Getenv("MONGODB_HOST")
 	port := os.Getenv("MONGODB_PORT")
+
 	clientOptions := options.Client().ApplyURI(fmt.Sprintf("mongodb://%v:%v@%v:%v", login, pass, host, port))
-	client, err := mongo.Connect(context.TODO(), clientOptions)
+
+	ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
+	client, err := mongo.Connect(ctx, clientOptions)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer client.Disconnect(ctx)
+
+	err = client.Ping(ctx, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = client.Ping(context.TODO(), nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println("Connected to MongoDB!")
+	log.Println("MongoDB connected")
 
 	Client = client
 	Users = client.Database("trello").Collection("users")
