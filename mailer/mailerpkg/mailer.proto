@@ -1,7 +1,9 @@
 syntax = "proto3";
+option go_package = "github.com/NikolayOskin/go-trello-clone/mailer";
 
 service Mailer {
-    rpc SendEmail (EmailRequest) returns (EmailResponse) {}
+    rpc SignUpEmail (EmailRequest) returns (EmailResponse) {}
+    rpc ResetPasswordEmail (EmailRequest) returns (EmailResponse) {}
 }
 
 message EmailRequest {
