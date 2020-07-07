@@ -3,7 +3,7 @@ module github.com/NikolayOskin/go-trello-clone
 go 1.14
 
 require (
-	github.com/NikolayOskin/go-trello-clone/mailer v0.0.0-20200703111405-8cb135f00325
+	github.com/NikolayOskin/go-trello-clone/mailer v0.0.0-20200704011041-33fa24e4acac
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-chi/chi v4.1.2+incompatible
 	github.com/go-chi/cors v1.1.1
