@@ -21,6 +21,7 @@ func InitDB() {
 	pass := os.Getenv("MONGODB_PASSWORD")
 	host := os.Getenv("MONGODB_HOST")
 	port := os.Getenv("MONGODB_PORT")
+	dbname := os.Getenv("MONGODB_DBNAME")
 
 	clientOptions := options.Client().ApplyURI(fmt.Sprintf("mongodb://%v:%v@%v:%v", login, pass, host, port))
 
@@ -29,18 +30,17 @@ func InitDB() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer client.Disconnect(ctx)
 
 	err = client.Ping(ctx, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	log.Println("MongoDB connected")
+	db := client.Database(dbname)
 
 	Client = client
-	Users = client.Database("trello").Collection("users")
-	Boards = client.Database("trello").Collection("boards")
-	Lists = client.Database("trello").Collection("lists")
-	Cards = client.Database("trello").Collection("cards")
+
+	Users = db.Collection("users")
+	Boards = db.Collection("boards")
+	Lists = db.Collection("lists")
+	Cards = db.Collection("cards")
 }
