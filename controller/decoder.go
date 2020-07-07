@@ -9,7 +9,7 @@ import (
 )
 
 type malformedRequest struct {
-	status int
+	Status int
 	msg    string
 }
 
@@ -30,21 +30,21 @@ func decodeJSON(w http.ResponseWriter, r *http.Request, dst interface{}) error {
 		case strings.HasPrefix(err.Error(), "json: unknown field "):
 			fieldName := strings.TrimPrefix(err.Error(), "json: unknown field ")
 			msg := fmt.Sprintf("Request body contains unknown field %s", fieldName)
-			return &malformedRequest{status: http.StatusBadRequest, msg: msg}
+			return &malformedRequest{Status: http.StatusBadRequest, msg: msg}
 
 		case err.Error() == "http: request body too large":
 			msg := "Request body must not be larger than 1MB"
-			return &malformedRequest{status: http.StatusRequestEntityTooLarge, msg: msg}
+			return &malformedRequest{Status: http.StatusRequestEntityTooLarge, msg: msg}
 
 		default:
-			return err
+			return &malformedRequest{Status: http.StatusBadRequest, msg: err.Error()}
 		}
 	}
 
 	err = dec.Decode(&struct{}{})
 	if err != io.EOF {
 		msg := "Request body must only contain a single JSON object"
-		return &malformedRequest{status: http.StatusBadRequest, msg: msg}
+		return &malformedRequest{Status: http.StatusBadRequest, msg: msg}
 	}
 
 	return nil
