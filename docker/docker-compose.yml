@@ -1,29 +1,49 @@
 version: '3.7'
 services:
-  mongodb:
-    container_name: mongodb
-    image: mongo:latest
-    environment:
-      MONGO_INITDB_DATABASE: admin
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: root
-    ports:
-      - 27017:27017
-    volumes:
-      - ./mongodb/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
-      - mongodata:/data/db
-  golang:
-    container_name: golang
-    tty: true
-    restart: on-failure
-    build:
-      context: ./golang
-    ports:
-      - 3001:3001
-      - 8082:8082
-    volumes:
-      - ../:/app
-    environment:
-      JWT_SECRET: your_jwt_secret_string
+    mongodb:
+        container_name: mongodb
+        image: mongo:latest
+        environment:
+            MONGO_INITDB_DATABASE: admin
+            MONGO_INITDB_ROOT_USERNAME: root
+            MONGO_INITDB_ROOT_PASSWORD: root
+        ports:
+            - 27017:27017
+        volumes:
+            - ./mongodb/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    golang:
+        container_name: golang
+        tty: true
+        restart: on-failure
+        build:
+            context: ./golang
+        ports:
+            - 3001:3001
+            - 8082:8082
+        volumes:
+            - ../:/app
+            - go-modules:/go/pkg/mod
+        environment:
+            JWT_SECRET: your_jwt_secret_string
+            MAILER_SERVICE: mailer:8083
+            MONGODB_LOGIN: root
+            MONGODB_PASSWORD: root
+            MONGODB_HOST: mongodb
+            MONGODB_PORT: 27017
+            MONGODB_DBNAME: trello
+    mailer:
+        container_name: mailer
+        tty: true
+        restart: on-failure
+        build:
+            context: ./mailer
+        ports:
+            - 8083:8083
+        volumes:
+            - ../mailer:/mailer
+        environment:
+            MAILER_SENDER: support@yourcompany.com
+            MAILGUN_DOMAIN: your_mailgun_domain
+            MAILGUN_API_KEY: your_mailgun_api_key
 volumes:
-  mongodata:
+    go-modules:
