@@ -3,6 +3,7 @@ package mongodb
 import (
 	"context"
 	"fmt"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
@@ -43,4 +44,29 @@ func InitDB() {
 	Boards = db.Collection("boards")
 	Lists = db.Collection("lists")
 	Cards = db.Collection("cards")
+
+	// creating single-field indexes
+	createIndex(Users, "email", true)
+	createIndex(Boards, "user_id", false)
+	createIndex(Lists, "board_id", false)
+	createIndex(Cards, "board_id", false)
+}
+
+// createIndex - creates an index for a specific field in a collection
+func createIndex(collection *mongo.Collection, field string, unique bool) bool {
+	mod := mongo.IndexModel{
+		Keys:    bson.M{field: 1}, // index in ascending order or -1 for descending order
+		Options: options.Index().SetUnique(unique),
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	_, err := collection.Indexes().CreateOne(ctx, mod)
+	if err != nil {
+		fmt.Println(err.Error())
+		return false
+	}
+
+	return true
 }
