@@ -2,6 +2,7 @@ package mongodb
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -24,7 +25,13 @@ func InitDB() {
 	port := os.Getenv("MONGODB_PORT")
 	dbname := os.Getenv("MONGODB_DBNAME")
 
-	clientOptions := options.Client().ApplyURI(fmt.Sprintf("mongodb://%v:%v@%v:%v", login, pass, host, port))
+	if os.Getenv("APP_ENV") == "test" {
+		dbname = os.Getenv("MONGODB_TEST_DBNAME")
+	}
+
+	dbUri := fmt.Sprintf("mongodb://%v:%v@%v:%v", login, pass, host, port)
+
+	clientOptions := options.Client().ApplyURI(dbUri)
 
 	ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
 	client, err := mongo.Connect(ctx, clientOptions)
@@ -45,6 +52,10 @@ func InitDB() {
 	Lists = db.Collection("lists")
 	Cards = db.Collection("cards")
 
+	createIndexes()
+}
+
+func createIndexes() {
 	// creating single-field indexes
 	createIndex(Users, "email", true)
 	createIndex(Boards, "user_id", false)
@@ -69,6 +80,29 @@ func createIndex(collection *mongo.Collection, field string, unique bool) bool {
 	}
 
 	return true
+}
+
+// FreshDb - delete all date from db and recreate indexes
+func FreshDb() error {
+	if os.Getenv("APP_ENV") != "test" {
+		return errors.New("you can refresh database only in test environment")
+	}
+
+	if err := Users.Drop(context.TODO()); err != nil {
+		log.Fatal(err)
+	}
+	if err := Boards.Drop(context.TODO()); err != nil {
+		log.Fatal(err)
+	}
+	if err := Lists.Drop(context.TODO()); err != nil {
+		log.Fatal(err)
+	}
+	if err := Cards.Drop(context.TODO()); err != nil {
+		log.Fatal(err)
+	}
+
+	createIndexes()
+	return nil
 }
 
 // IsDuplicated - check if error is unique index duplicated error
