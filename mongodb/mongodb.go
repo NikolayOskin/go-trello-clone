@@ -70,3 +70,15 @@ func createIndex(collection *mongo.Collection, field string, unique bool) bool {
 
 	return true
 }
+
+// IsDuplicated - check if error is unique index duplicated error
+func IsDuplicated(err error) bool {
+	if we, ok := err.(mongo.WriteException); ok {
+		for _, e := range we.WriteErrors {
+			if e.Code == 11000 {
+				return true
+			}
+		}
+	}
+	return false
+}
