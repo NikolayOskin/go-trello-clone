@@ -31,6 +31,7 @@ services:
             MONGODB_HOST: mongodb
             MONGODB_PORT: 27017
             MONGODB_DBNAME: trello
+            MONGODB_TEST_DBNAME: trello-test
     mailer:
         container_name: mailer
         tty: true
