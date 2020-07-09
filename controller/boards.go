@@ -1,10 +1,10 @@
 package controller
 
 import (
-	"github.com/NikolayOskin/go-trello-clone/handlers"
-	mid "github.com/NikolayOskin/go-trello-clone/middleware"
+	mid "github.com/NikolayOskin/go-trello-clone/controller/middleware"
 	"github.com/NikolayOskin/go-trello-clone/model"
 	"github.com/NikolayOskin/go-trello-clone/repository"
+	"github.com/NikolayOskin/go-trello-clone/service/handlers"
 
 	//"github.com/NikolayOskin/go-trello-clone/repository"
 
@@ -39,7 +39,7 @@ func (b *BoardController) Create(w http.ResponseWriter, r *http.Request) {
 	var board model.Board
 	user := r.Context().Value(mid.UserCtx).(model.User)
 	if err := decodeJSON(w, r, &board); err != nil {
-		JSONResp(w, 500, &ErrResp{Message: "Could not parse json request"})
+		JSONResp(w, err.(*malformedRequest).Status, &ErrResp{err.Error()})
 		return
 	}
 	board.UserId = user.ID.Hex()
