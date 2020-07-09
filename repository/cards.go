@@ -5,9 +5,23 @@ import (
 	"github.com/NikolayOskin/go-trello-clone/model"
 	"github.com/NikolayOskin/go-trello-clone/mongodb"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type Cards struct{}
+
+func (c *Cards) GetById(id string) (*model.Card, error) {
+	var card model.Card
+	objId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err
+	}
+	if err := mongodb.Cards.FindOne(context.TODO(), bson.M{"_id": objId}).Decode(&card); err != nil {
+		return nil, err
+	}
+
+	return &card, nil
+}
 
 func (c *Cards) GetByBoardId(id string) ([]model.Card, error) {
 	var cards []model.Card
