@@ -10,6 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
+	"os"
 	"time"
 )
 
@@ -62,11 +63,13 @@ func ResetPassword(email string, ctx context.Context) error {
 		return err
 	}
 
-	ctx, cancel = context.WithTimeout(context.Background(), 1*time.Second)
-	defer cancel()
-	_, err = mailer.Client().ResetPasswordEmail(ctx, &pb.EmailRequest{Email: email, Code: u.ResetPasswordCode})
-	if err != nil {
-		return err
+	if os.Getenv("APP_ENV") != "test" {
+		ctx, cancel = context.WithTimeout(context.Background(), 1*time.Second)
+		defer cancel()
+		_, err = mailer.Client().ResetPasswordEmail(ctx, &pb.EmailRequest{Email: email, Code: u.ResetPasswordCode})
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
