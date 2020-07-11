@@ -4,9 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/NikolayOskin/go-trello-clone/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"golang.org/x/crypto/bcrypt"
 	"log"
 	"os"
 	"time"
@@ -83,9 +85,9 @@ func createIndex(collection *mongo.Collection, field string, unique bool) bool {
 }
 
 // FreshDb - delete all date from db and recreate indexes
-func FreshDb() error {
+func FreshDb() {
 	if os.Getenv("APP_ENV") != "test" {
-		return errors.New("you can refresh database only in test environment")
+		log.Fatal("you can refresh database only in test environment")
 	}
 
 	if err := Users.Drop(context.TODO()); err != nil {
@@ -102,7 +104,32 @@ func FreshDb() error {
 	}
 
 	createIndexes()
-	return nil
+}
+
+func Seed() {
+	seedUser()
+}
+
+func seedUser() {
+	user := &model.User{
+		Email:             "testuser@gmail.com",
+		Password:          "qwerty",
+		Verified:          false,
+		VerificationCode:  "12345",
+		ResetPasswordCode: "",
+	}
+	hash, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.MinCost)
+	if err != nil {
+		log.Fatal(err)
+	}
+	user.Password = string(hash)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if _, err = Users.InsertOne(ctx, user); err != nil {
+		if IsDuplicated(err) {
+			log.Fatal(errors.New("user with this email already exists"))
+		}
+	}
 }
 
 // IsDuplicated - check if error is unique index duplicated error
