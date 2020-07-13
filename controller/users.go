@@ -1,7 +1,7 @@
 package controller
 
 import (
-	mid "github.com/NikolayOskin/go-trello-clone/middleware"
+	mid "github.com/NikolayOskin/go-trello-clone/controller/middleware"
 	"github.com/NikolayOskin/go-trello-clone/model"
 	"github.com/NikolayOskin/go-trello-clone/repository"
 	"net/http"

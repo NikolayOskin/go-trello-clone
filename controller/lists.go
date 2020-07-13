@@ -1,9 +1,9 @@
 package controller
 
 import (
-	"github.com/NikolayOskin/go-trello-clone/handlers"
-	mid "github.com/NikolayOskin/go-trello-clone/middleware"
+	mid "github.com/NikolayOskin/go-trello-clone/controller/middleware"
 	"github.com/NikolayOskin/go-trello-clone/model"
+	"github.com/NikolayOskin/go-trello-clone/service/handlers"
 	"github.com/go-chi/chi"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
@@ -15,7 +15,7 @@ func (l *ListController) Create(w http.ResponseWriter, r *http.Request) {
 	var list model.List
 	user := r.Context().Value(mid.UserCtx).(model.User)
 	if err := decodeJSON(w, r, &list); err != nil {
-		JSONResp(w, 500, &ErrResp{Message: "Could not parse json request"})
+		JSONResp(w, err.(*malformedRequest).Status, &ErrResp{err.Error()})
 		return
 	}
 	list.UserId = user.ID.Hex()

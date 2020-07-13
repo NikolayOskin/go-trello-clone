@@ -2,10 +2,10 @@ package controller
 
 import (
 	"context"
-	"github.com/NikolayOskin/go-trello-clone/handlers"
-	mid "github.com/NikolayOskin/go-trello-clone/middleware"
+	mid "github.com/NikolayOskin/go-trello-clone/controller/middleware"
 	"github.com/NikolayOskin/go-trello-clone/model"
 	"github.com/NikolayOskin/go-trello-clone/mongodb"
+	"github.com/NikolayOskin/go-trello-clone/service/handlers"
 	"github.com/go-chi/chi"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -18,7 +18,7 @@ func (c *CardController) Create(w http.ResponseWriter, r *http.Request) {
 	var card model.Card
 	user := r.Context().Value(mid.UserCtx).(model.User)
 	if err := decodeJSON(w, r, &card); err != nil {
-		JSONResp(w, 500, &ErrResp{Message: "Could not parse json request"})
+		JSONResp(w, err.(*malformedRequest).Status, &ErrResp{err.Error()})
 		return
 	}
 	card.UserId = user.ID.Hex()
@@ -52,9 +52,8 @@ func (c *CardController) Delete(w http.ResponseWriter, r *http.Request) {
 		JSONResp(w, 500, &ErrResp{Message: "Server error"})
 		return
 	}
-	col := mongodb.Client.Database("trello").Collection("cards")
 	filter := bson.M{"_id": id, "user_id": user.ID.Hex()}
-	if _, err = col.DeleteOne(context.TODO(), filter); err != nil {
+	if _, err = mongodb.Cards.DeleteOne(context.TODO(), filter); err != nil {
 		JSONResp(w, 500, &ErrResp{Message: err.Error()})
 		return
 	}
