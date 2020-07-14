@@ -2,13 +2,10 @@ package mongodb
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"github.com/NikolayOskin/go-trello-clone/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"golang.org/x/crypto/bcrypt"
 	"log"
 	"os"
 	"time"
@@ -104,32 +101,6 @@ func FreshDb() {
 	}
 
 	createIndexes()
-}
-
-func Seed() {
-	seedUser()
-}
-
-func seedUser() {
-	user := &model.User{
-		Email:             "testuser@gmail.com",
-		Password:          "qwerty",
-		Verified:          false,
-		VerificationCode:  "12345",
-		ResetPasswordCode: "",
-	}
-	hash, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.MinCost)
-	if err != nil {
-		log.Fatal(err)
-	}
-	user.Password = string(hash)
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	if _, err = Users.InsertOne(ctx, user); err != nil {
-		if IsDuplicated(err) {
-			log.Fatal(errors.New("user with this email already exists"))
-		}
-	}
 }
 
 // IsDuplicated - check if error is unique index duplicated error
