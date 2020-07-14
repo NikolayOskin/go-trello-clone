@@ -15,12 +15,17 @@ func (u *UserController) GetAuthUser(w http.ResponseWriter, r *http.Request) {
 	user, err := repo.GetById(userCtx.ID.Hex())
 	if err != nil {
 		JSONResp(w, 500, &ErrResp{Message: "Could not fetch user"})
+		return
+	}
+	readUser := model.ReadUser{
+		ID:    userCtx.ID,
+		Email: userCtx.Email,
 	}
 	if user != nil {
-		userCtx.Verified = user.Verified
+		readUser.Verified = user.Verified
 	}
 
-	JSONResp(w, 200, userCtx)
+	JSONResp(w, 200, readUser)
 }
 
 func (u *UserController) GetBoards(w http.ResponseWriter, r *http.Request) {
@@ -29,6 +34,7 @@ func (u *UserController) GetBoards(w http.ResponseWriter, r *http.Request) {
 	boards, err := boardsRepo.FetchByUser(user)
 	if err != nil {
 		JSONResp(w, 500, &ErrResp{Message: "Could not fetch user boards"})
+		return
 	}
 	JSONResp(w, 200, boards)
 }
