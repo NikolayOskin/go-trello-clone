@@ -21,7 +21,7 @@ func (l *ListController) Create(w http.ResponseWriter, r *http.Request) {
 	list.UserId = user.ID.Hex()
 	listId, err := handlers.CreateList(list)
 	if err != nil {
-		JSONResp(w, 500, &ErrResp{Message: "Server error"})
+		JSONResp(w, 400, &ErrResp{Message: err.Error()})
 		return
 	}
 	JSONResp(w, 201, &CreatedResponse{Message: "Created", Id: listId})
