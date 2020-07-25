@@ -3,9 +3,9 @@ package handlers
 import (
 	"context"
 	"errors"
+	"github.com/NikolayOskin/go-trello-clone/db"
 	pb "github.com/NikolayOskin/go-trello-clone/mailer/src"
 	"github.com/NikolayOskin/go-trello-clone/model"
-	"github.com/NikolayOskin/go-trello-clone/mongodb"
 	mailer "github.com/NikolayOskin/go-trello-clone/service"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"os"
@@ -26,8 +26,8 @@ func CreateUser(user model.User, ctx context.Context) error {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	if _, err = mongodb.Users.InsertOne(ctx, user); err != nil {
-		if mongodb.IsDuplicated(err) {
+	if _, err = db.Users.InsertOne(ctx, user); err != nil {
+		if db.IsDuplicated(err) {
 			return errors.New("user with this email already exists")
 		}
 		return err

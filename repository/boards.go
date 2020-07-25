@@ -2,8 +2,8 @@ package repository
 
 import (
 	"context"
+	"github.com/NikolayOskin/go-trello-clone/db"
 	"github.com/NikolayOskin/go-trello-clone/model"
-	"github.com/NikolayOskin/go-trello-clone/mongodb"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -13,7 +13,7 @@ type Boards struct{}
 func (b *Boards) FetchByUser(user model.User) ([]model.Board, error) {
 	var boards []model.Board
 	filter := bson.D{{"user_id", user.ID.Hex()}}
-	cursor, err := mongodb.Boards.Find(context.TODO(), filter)
+	cursor, err := db.Boards.Find(context.TODO(), filter)
 	if err != nil {
 		return nil, err
 	}
@@ -30,7 +30,7 @@ func (b *Boards) GetById(id string) (*model.Board, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := mongodb.Boards.FindOne(context.TODO(), bson.M{"_id": objId}).Decode(&board); err != nil {
+	if err := db.Boards.FindOne(context.TODO(), bson.M{"_id": objId}).Decode(&board); err != nil {
 		return nil, err
 	}
 

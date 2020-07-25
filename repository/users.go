@@ -2,8 +2,8 @@ package repository
 
 import (
 	"context"
+	"github.com/NikolayOskin/go-trello-clone/db"
 	"github.com/NikolayOskin/go-trello-clone/model"
-	"github.com/NikolayOskin/go-trello-clone/mongodb"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -16,7 +16,7 @@ func (b *Users) GetById(id string) (*model.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := mongodb.Users.FindOne(context.TODO(), bson.M{"_id": objId}).Decode(&user); err != nil {
+	if err := db.Users.FindOne(context.TODO(), bson.M{"_id": objId}).Decode(&user); err != nil {
 		return nil, err
 	}
 

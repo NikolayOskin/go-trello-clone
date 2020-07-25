@@ -1,4 +1,4 @@
-package mongodb
+package db
 
 import (
 	"context"
@@ -55,7 +55,6 @@ func InitDB() {
 }
 
 func createIndexes() {
-	// creating single-field indexes
 	createIndex(Users, "email", true)
 	createIndex(Boards, "user_id", false)
 	createIndex(Lists, "board_id", false)
@@ -81,7 +80,7 @@ func createIndex(collection *mongo.Collection, field string, unique bool) bool {
 	return true
 }
 
-// FreshDb - delete all date from db and recreate indexes
+// FreshDb - delete all data from db and recreate indexes
 func FreshDb() {
 	if os.Getenv("APP_ENV") != "test" {
 		log.Fatal("you can refresh database only in test environment")

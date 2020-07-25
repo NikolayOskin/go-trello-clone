@@ -59,9 +59,9 @@ func seedUser(user *model.User) string {
 	user.Password = string(hash)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	res, err := mongodb.Users.InsertOne(ctx, user)
+	res, err := db.Users.InsertOne(ctx, user)
 	if err != nil {
-		if mongodb.IsDuplicated(err) {
+		if db.IsDuplicated(err) {
 			log.Fatal(errors.New("user with this email already exists"))
 		}
 		log.Fatal(err)
@@ -78,7 +78,7 @@ func seedBoard(boardHex string, title string, userId string) string {
 		UserId: userId,
 		Lists:  nil,
 	}
-	res, err := mongodb.Boards.InsertOne(context.Background(), b)
+	res, err := db.Boards.InsertOne(context.Background(), b)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -94,7 +94,7 @@ func seedList(listHex string, title string, boardId string, userId string) strin
 		UserId:   userId,
 		Position: 1,
 	}
-	res, err := mongodb.Lists.InsertOne(context.Background(), l)
+	res, err := db.Lists.InsertOne(context.Background(), l)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -111,7 +111,7 @@ func seedCard(cardHex string, text string, listId string, boardId string, userId
 		UserId:   userId,
 		Position: 1,
 	}
-	res, err := mongodb.Cards.InsertOne(context.Background(), c)
+	res, err := db.Cards.InsertOne(context.Background(), c)
 	if err != nil {
 		log.Fatal(err)
 	}

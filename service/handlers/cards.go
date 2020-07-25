@@ -3,8 +3,8 @@ package handlers
 import (
 	"context"
 	"errors"
+	"github.com/NikolayOskin/go-trello-clone/db"
 	"github.com/NikolayOskin/go-trello-clone/model"
-	"github.com/NikolayOskin/go-trello-clone/mongodb"
 	"github.com/NikolayOskin/go-trello-clone/repository"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -20,7 +20,7 @@ func CreateCard(c model.Card) (string, error) {
 		return "", errors.New("list for your user does not exist")
 	}
 	c.BoardId = list.BoardId
-	res, err := mongodb.Cards.InsertOne(context.TODO(), c)
+	res, err := db.Cards.InsertOne(context.TODO(), c)
 	if err != nil {
 		return "", err
 	}
@@ -47,7 +47,7 @@ func UpdateCard(c model.Card) error {
 	}
 
 	filter := bson.M{"_id": c.ID}
-	if _, err := mongodb.Cards.UpdateOne(context.TODO(), filter, bson.M{"$set": c}); err != nil {
+	if _, err := db.Cards.UpdateOne(context.TODO(), filter, bson.M{"$set": c}); err != nil {
 		return err
 	}
 	return nil

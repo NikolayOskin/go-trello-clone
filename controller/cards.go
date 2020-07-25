@@ -3,8 +3,8 @@ package controller
 import (
 	"context"
 	mid "github.com/NikolayOskin/go-trello-clone/controller/middleware"
+	"github.com/NikolayOskin/go-trello-clone/db"
 	"github.com/NikolayOskin/go-trello-clone/model"
-	"github.com/NikolayOskin/go-trello-clone/mongodb"
 	"github.com/NikolayOskin/go-trello-clone/service/handlers"
 	"github.com/go-chi/chi"
 	"go.mongodb.org/mongo-driver/bson"
@@ -53,7 +53,7 @@ func (c *CardController) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	filter := bson.M{"_id": id, "user_id": user.ID.Hex()}
-	if _, err = mongodb.Cards.DeleteOne(context.TODO(), filter); err != nil {
+	if _, err = db.Cards.DeleteOne(context.TODO(), filter); err != nil {
 		JSONResp(w, 500, &ErrResp{Message: err.Error()})
 		return
 	}

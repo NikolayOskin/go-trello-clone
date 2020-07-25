@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"github.com/NikolayOskin/go-trello-clone/app"
 	"github.com/NikolayOskin/go-trello-clone/controller"
-	"github.com/NikolayOskin/go-trello-clone/mongodb"
-	"github.com/NikolayOskin/go-trello-clone/mongodb/seeder"
+	"github.com/NikolayOskin/go-trello-clone/db"
+	"github.com/NikolayOskin/go-trello-clone/db/seeder"
 	"github.com/go-chi/chi"
 	"net/http"
 	"net/http/httptest"
@@ -20,8 +20,8 @@ var router *chi.Mux
 
 func TestMain(m *testing.M) {
 	_ = os.Setenv("APP_ENV", "test")
-	mongodb.InitDB()
-	mongodb.FreshDb()
+	db.InitDB()
+	db.FreshDb()
 	seeder.Seed()
 	a := app.New()
 	a.InitRouting()

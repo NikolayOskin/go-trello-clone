@@ -2,15 +2,15 @@ package handlers
 
 import (
 	"context"
+	"github.com/NikolayOskin/go-trello-clone/db"
 	"github.com/NikolayOskin/go-trello-clone/model"
-	"github.com/NikolayOskin/go-trello-clone/mongodb"
 	"github.com/NikolayOskin/go-trello-clone/repository"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func CreateBoard(b model.Board) (string, error) {
-	res, err := mongodb.Boards.InsertOne(context.TODO(), b)
+	res, err := db.Boards.InsertOne(context.TODO(), b)
 	if err != nil {
 		return "", err
 	}
@@ -19,7 +19,7 @@ func CreateBoard(b model.Board) (string, error) {
 
 func UpdateBoard(b model.Board) error {
 	f := bson.M{"_id": b.ID, "user_id": b.UserId}
-	if _, err := mongodb.Boards.UpdateOne(context.TODO(), f, bson.M{"$set": b}); err != nil {
+	if _, err := db.Boards.UpdateOne(context.TODO(), f, bson.M{"$set": b}); err != nil {
 		return err
 	}
 	return nil

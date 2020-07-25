@@ -2,13 +2,12 @@ package main
 
 import (
 	"github.com/NikolayOskin/go-trello-clone/app"
-	"github.com/NikolayOskin/go-trello-clone/mongodb"
-	"log"
+	"github.com/NikolayOskin/go-trello-clone/db"
 )
 
 func main() {
 	a := app.New()
-	mongodb.InitDB()
+	db.InitDB()
 
 	a.InitRouting()
 	a.InitServices()
