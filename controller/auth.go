@@ -60,10 +60,6 @@ func (a *AuthController) SignUp(w http.ResponseWriter, r *http.Request) {
 func (a *AuthController) VerifyEmail(w http.ResponseWriter, r *http.Request) {
 	user := r.Context().Value(mid.UserCtx).(model.User)
 	code := chi.URLParam(r, "code")
-	if code == "" {
-		JSONResp(w, 422, &ErrResp{"code must not be empty"})
-		return
-	}
 	if err := handlers.VerifyEmail(user, code, r.Context()); err != nil {
 		JSONResp(w, 400, &ErrResp{err.Error()})
 		return
