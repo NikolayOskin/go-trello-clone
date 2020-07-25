@@ -4,7 +4,9 @@ import (
 	mid "github.com/NikolayOskin/go-trello-clone/controller/middleware"
 	"github.com/NikolayOskin/go-trello-clone/model"
 	"github.com/NikolayOskin/go-trello-clone/service/handlers"
+	v "github.com/NikolayOskin/go-trello-clone/service/validator"
 	"github.com/go-chi/chi"
+	"github.com/go-playground/validator/v10"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
 )
@@ -19,6 +21,13 @@ func (l *ListController) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	list.UserId = user.ID.Hex()
+	validate := v.New()
+	if err := validate.Struct(list); err != nil {
+		for _, e := range err.(validator.ValidationErrors) {
+			JSONResp(w, 422, &ErrResp{e.Translate(v.Trans)})
+			return
+		}
+	}
 	listId, err := handlers.CreateList(list)
 	if err != nil {
 		JSONResp(w, 400, &ErrResp{Message: err.Error()})
