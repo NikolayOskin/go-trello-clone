@@ -1,7 +1,6 @@
 package tests
 
 import (
-	"github.com/NikolayOskin/go-trello-clone/app"
 	"io"
 	"io/ioutil"
 
@@ -12,10 +11,7 @@ import (
 )
 
 func TestSignUpValidation(t *testing.T) {
-	a := app.App{}
-	a.InitRouting()
-
-	ts := httptest.NewServer(a.Router)
+	ts := httptest.NewServer(router)
 	defer ts.Close()
 
 	cases := []struct {
@@ -39,10 +35,7 @@ func TestSignUpValidation(t *testing.T) {
 }
 
 func TestSignInValidation(t *testing.T) {
-	a := app.App{}
-	a.InitRouting()
-
-	ts := httptest.NewServer(a.Router)
+	ts := httptest.NewServer(router)
 	defer ts.Close()
 
 	cases := []struct {
@@ -64,10 +57,7 @@ func TestSignInValidation(t *testing.T) {
 }
 
 func TestResetPasswordValidation(t *testing.T) {
-	a := app.App{}
-	a.InitRouting()
-
-	ts := httptest.NewServer(a.Router)
+	ts := httptest.NewServer(router)
 	defer ts.Close()
 
 	// empty email
@@ -92,10 +82,7 @@ func TestResetPasswordValidation(t *testing.T) {
 }
 
 func TestSetNewPasswordValidation(t *testing.T) {
-	a := app.App{}
-	a.InitRouting()
-
-	ts := httptest.NewServer(a.Router)
+	ts := httptest.NewServer(router)
 	defer ts.Close()
 
 	cases := []struct {
