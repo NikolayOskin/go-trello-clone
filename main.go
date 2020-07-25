@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	a := app.App{}
+	a := app.New()
 	mongodb.InitDB()
 
 	a.InitRouting()

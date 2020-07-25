@@ -9,7 +9,7 @@ import (
 	"github.com/go-chi/chi"
 )
 
-func (a *App) InitRouting() {
+func (a *app) InitRouting() {
 	a.Router = chi.NewRouter()
 
 	a.Router.Use(middleware.Logger)
