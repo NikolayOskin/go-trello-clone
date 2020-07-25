@@ -26,7 +26,7 @@ func CreateList(list model.List) (string, error) {
 	return res.InsertedID.(primitive.ObjectID).Hex(), nil
 }
 
-func UpdateList(l model.List) error {
+func UpdateList(l model.UpdateList) error {
 	f := bson.M{"_id": l.ID, "user_id": l.UserId}
 	if _, err := mongodb.Lists.UpdateOne(context.TODO(), f, bson.M{"$set": l}); err != nil {
 		return err
