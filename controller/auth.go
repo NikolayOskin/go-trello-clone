@@ -13,7 +13,9 @@ import (
 	"time"
 )
 
-type AuthController struct{}
+type AuthController struct {
+	AuthService *auth.Auth
+}
 
 func (a *AuthController) SignIn(w http.ResponseWriter, r *http.Request) {
 	var user model.User

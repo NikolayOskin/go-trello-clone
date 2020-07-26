@@ -17,7 +17,7 @@ func (a *app) InitRouting() {
 	a.Router.Use(getCorsOpts().Handler)
 
 	a.Router.Route("/auth", func(r chi.Router) {
-		ctrl := &controller.AuthController{}
+		ctrl := &controller.AuthController{AuthService: a.Auth}
 		r.Post("/sign-in", ctrl.SignIn)
 		r.Post("/sign-up", ctrl.SignUp)
 		r.Post("/reset-password", ctrl.ResetPassword)
