@@ -11,8 +11,5 @@ func main() {
 
 	a.InitRouting()
 	a.InitServices()
-
-	log.Println("Starting server...")
-
-	a.Run(":3001")
+	a.RunServer(":3001")
 }
