@@ -2,44 +2,34 @@ package middleware
 
 import (
 	"context"
-	"errors"
-	"github.com/NikolayOskin/go-trello-clone/model"
-	"github.com/dgrijalva/jwt-go"
-	"github.com/go-chi/render"
+	"github.com/NikolayOskin/go-trello-clone/service/auth"
 	"net/http"
-	"os"
+
+	"github.com/go-chi/render"
 )
 
-func JWTCheck(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var ctx context.Context
-		tokenString := r.Header.Get("Authorization")
+func JWTCheck(auth *auth.Auth) func(next http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		fn := func(w http.ResponseWriter, r *http.Request) {
+			var ctx context.Context
+			tokenString := r.Header.Get("Authorization")
 
-		if len(tokenString) == 0 {
-			w.WriteHeader(http.StatusUnauthorized)
-			render.JSON(w, r, render.M{"message": "Unauthenticated"})
-			return
-		}
-
-		cl := model.JWTClaims{}
-
-		token, err := jwt.ParseWithClaims(tokenString, &cl, func(token *jwt.Token) (interface{}, error) {
-			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, errors.New("unexpected signing method")
+			if len(tokenString) == 0 {
+				w.WriteHeader(http.StatusUnauthorized)
+				render.JSON(w, r, render.M{"message": "Unauthenticated"})
+				return
 			}
-			return []byte(os.Getenv("JWT_SECRET")), nil
-		})
-		if token == nil || err != nil {
-			w.WriteHeader(http.StatusUnauthorized)
-			render.JSON(w, r, render.M{"message": "Unauthenticated"})
-			return
+
+			claims, err := auth.ValidateToken(tokenString)
+			if err != nil {
+				w.WriteHeader(http.StatusUnauthorized)
+				render.JSON(w, r, render.M{"message": "Unauthenticated"})
+				return
+			}
+
+			ctx = context.WithValue(r.Context(), UserCtx, claims.User)
+			next.ServeHTTP(w, r.WithContext(ctx))
 		}
-		if _, ok := token.Claims.(*model.JWTClaims); ok && !token.Valid {
-			w.WriteHeader(http.StatusUnauthorized)
-			render.JSON(w, r, render.M{"message": "Unauthenticated"})
-			return
-		}
-		ctx = context.WithValue(r.Context(), UserCtx, cl.User)
-		next.ServeHTTP(w, r.WithContext(ctx))
-	})
+		return http.HandlerFunc(fn)
+	}
 }

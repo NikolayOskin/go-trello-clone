@@ -22,18 +22,18 @@ func (a *app) InitRouting() {
 		r.Post("/sign-up", ctrl.SignUp)
 		r.Post("/reset-password", ctrl.ResetPassword)
 		r.Post("/new-password", ctrl.NewPassword)
-		r.With(mid.JWTCheck).Put("/verify/{code:[0-9]+}", ctrl.VerifyEmail)
+		r.With(mid.JWTCheck(a.Auth)).Put("/verify/{code:[0-9]+}", ctrl.VerifyEmail)
 	})
 
 	a.Router.Route("/users", func(r chi.Router) {
-		r.Use(mid.JWTCheck)
+		r.Use(mid.JWTCheck(a.Auth))
 		ctrl := &controller.UserController{}
 		r.Get("/me", ctrl.GetAuthUser)
 		r.With(mid.Verified).Get("/me/boards", ctrl.GetBoards)
 	})
 
 	a.Router.Route("/boards", func(r chi.Router) {
-		r.Use(mid.JWTCheck)
+		r.Use(mid.JWTCheck(a.Auth))
 		r.Use(mid.Verified)
 		ctrl := &controller.BoardController{}
 		r.Get("/{id:[a-z0-9]+}", ctrl.GetFull)
@@ -42,7 +42,7 @@ func (a *app) InitRouting() {
 	})
 
 	a.Router.Route("/cards", func(r chi.Router) {
-		r.Use(mid.JWTCheck)
+		r.Use(mid.JWTCheck(a.Auth))
 		r.Use(mid.Verified)
 		ctrl := &controller.CardController{}
 		r.Post("/", ctrl.Create)
@@ -51,7 +51,7 @@ func (a *app) InitRouting() {
 	})
 
 	a.Router.Route("/lists", func(r chi.Router) {
-		r.Use(mid.JWTCheck)
+		r.Use(mid.JWTCheck(a.Auth))
 		r.Use(mid.Verified)
 		ctrl := &controller.ListController{}
 		r.Post("/", ctrl.Create)
