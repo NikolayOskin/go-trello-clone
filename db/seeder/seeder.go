@@ -3,13 +3,14 @@ package seeder
 import (
 	"context"
 	"errors"
-	"github.com/NikolayOskin/go-trello-clone/model"
-	"github.com/NikolayOskin/go-trello-clone/mongodb"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"golang.org/x/crypto/bcrypt"
 	"log"
 	"os"
 	"time"
+
+	"github.com/NikolayOskin/go-trello-clone/db"
+	"github.com/NikolayOskin/go-trello-clone/model"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func Seed() {
@@ -48,7 +49,9 @@ func Seed() {
 
 	boardId := seedBoard("507f191e810c19729de860ea", "Some board", verifiedUserId)
 	listId := seedList("507f191e810c19729de860ea", "First list", boardId, verifiedUserId)
+	listId2 := seedList("507f191e810c19729de860eb", "Second list", boardId, verifiedUserId)
 	seedCard("507f191e810c19729de860ea", "first card", listId, boardId, verifiedUserId)
+	seedCard("507f191e810c19729de860eb", "second card", listId2, boardId, verifiedUserId)
 }
 
 func seedUser(user *model.User) string {
