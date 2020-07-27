@@ -46,7 +46,7 @@ func (l *ListController) Update(w http.ResponseWriter, r *http.Request) {
 	}
 	list.ID = id
 	if err = handlers.UpdateList(list); err != nil {
-		JSONResp(w, 200, &ErrResp{Message: "Server error"})
+		JSONResp(w, 500, &ErrResp{Message: "Server error"})
 		return
 	}
 	JSONResp(w, 200, &Response{Message: "Updated"})
@@ -56,7 +56,7 @@ func (l *ListController) Delete(w http.ResponseWriter, r *http.Request) {
 	user := r.Context().Value(mid.UserCtx).(model.User)
 	id, err := primitive.ObjectIDFromHex(chi.URLParam(r, "id"))
 	if err != nil {
-		JSONResp(w, 500, &ErrResp{Message: "Server error"})
+		JSONResp(w, 500, &ErrResp{Message: err.Error()})
 		return
 	}
 	if err := handlers.DeleteList(id, user); err != nil {
