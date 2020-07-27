@@ -30,6 +30,7 @@ func New() *app {
 		log.Fatal("cannot read public key from file")
 	}
 
+	// Parsing private & public keys
 	privateKey, err := jwt.ParseRSAPrivateKeyFromPEM(privatePEM)
 	if err != nil {
 		log.Fatal("cannot parse private key")
@@ -38,8 +39,9 @@ func New() *app {
 	if err != nil {
 		log.Fatal("cannot parse public key")
 	}
-	const jwtTTLHours = 72 // jwt token life time in hours
 
+	// Initiating Auth service
+	const jwtTTLHours = 72 // jwt token life time in hours
 	a, err := auth.New(privateKey, publicKey, jwtTTLHours)
 	if err != nil {
 		log.Fatal(err)
