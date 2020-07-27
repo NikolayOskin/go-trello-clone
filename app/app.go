@@ -1,6 +1,7 @@
 package app
 
 import (
+	"github.com/go-playground/validator/v10"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -12,8 +13,9 @@ import (
 )
 
 type app struct {
-	Router *chi.Mux
-	Auth   *auth.Auth
+	Router    *chi.Mux
+	Auth      *auth.Auth
+	Validator *validator.Validate
 }
 
 func New() *app {
@@ -44,8 +46,9 @@ func New() *app {
 	}
 
 	return &app{
-		Router: chi.NewRouter(),
-		Auth:   a,
+		Router:    chi.NewRouter(),
+		Auth:      a,
+		Validator: validator.New(),
 	}
 }
 

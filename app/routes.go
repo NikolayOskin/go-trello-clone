@@ -17,7 +17,7 @@ func (a *app) InitRouting() {
 	a.Router.Use(getCorsOpts().Handler)
 
 	a.Router.Route("/auth", func(r chi.Router) {
-		ctrl := &controller.AuthController{AuthService: a.Auth}
+		ctrl := &controller.AuthController{AuthService: a.Auth, Validate: a.Validator}
 		r.Post("/sign-in", ctrl.SignIn)
 		r.Post("/sign-up", ctrl.SignUp)
 		r.Post("/reset-password", ctrl.ResetPassword)
@@ -53,7 +53,7 @@ func (a *app) InitRouting() {
 	a.Router.Route("/lists", func(r chi.Router) {
 		r.Use(mid.JWTCheck(a.Auth))
 		r.Use(mid.Verified)
-		ctrl := &controller.ListController{}
+		ctrl := &controller.ListController{Validate: a.Validator}
 		r.Post("/", ctrl.Create)
 		r.With(mid.DecodeListObj).Put("/{id:[a-z0-9]{24}}", ctrl.Update)
 		r.Delete("/{id:[a-z0-9]{24}}", ctrl.Delete)

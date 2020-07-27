@@ -11,7 +11,9 @@ import (
 	"net/http"
 )
 
-type ListController struct{}
+type ListController struct {
+	Validate *validator.Validate
+}
 
 func (l *ListController) Create(w http.ResponseWriter, r *http.Request) {
 	var list model.List
@@ -21,8 +23,7 @@ func (l *ListController) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	list.UserId = user.ID.Hex()
-	validate := v.New()
-	if err := validate.Struct(list); err != nil {
+	if err := l.Validate.Struct(list); err != nil {
 		for _, e := range err.(validator.ValidationErrors) {
 			JSONResp(w, 422, &ErrResp{e.Translate(v.Trans)})
 			return

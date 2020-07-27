@@ -1,19 +1,20 @@
 package controller
 
 import (
+	v "github.com/NikolayOskin/go-trello-clone/service/validator"
 	"net/http"
 
 	mid "github.com/NikolayOskin/go-trello-clone/controller/middleware"
 	"github.com/NikolayOskin/go-trello-clone/model"
 	"github.com/NikolayOskin/go-trello-clone/service/auth"
 	"github.com/NikolayOskin/go-trello-clone/service/handlers"
-	v "github.com/NikolayOskin/go-trello-clone/service/validator"
 	"github.com/go-chi/chi"
 	"github.com/go-playground/validator/v10"
 )
 
 type AuthController struct {
 	AuthService *auth.Auth
+	Validate    *validator.Validate
 }
 
 func (a *AuthController) SignIn(w http.ResponseWriter, r *http.Request) {
@@ -44,8 +45,7 @@ func (a *AuthController) SignUp(w http.ResponseWriter, r *http.Request) {
 		JSONResp(w, err.(*malformedRequest).Status, &ErrResp{err.Error()})
 		return
 	}
-	validate := v.New()
-	if err := validate.Struct(user); err != nil {
+	if err := a.Validate.Struct(user); err != nil {
 		for _, e := range err.(validator.ValidationErrors) {
 			JSONResp(w, 422, &ErrResp{e.Translate(v.Trans)})
 			return
@@ -74,8 +74,7 @@ func (a *AuthController) ResetPassword(w http.ResponseWriter, r *http.Request) {
 		JSONResp(w, err.(*malformedRequest).Status, &ErrResp{err.Error()})
 		return
 	}
-	validate := v.New()
-	if err := validate.Struct(req); err != nil {
+	if err := a.Validate.Struct(req); err != nil {
 		for _, e := range err.(validator.ValidationErrors) {
 			JSONResp(w, 422, &ErrResp{e.Translate(v.Trans)})
 			return
@@ -94,8 +93,7 @@ func (a *AuthController) NewPassword(w http.ResponseWriter, r *http.Request) {
 		JSONResp(w, err.(*malformedRequest).Status, &ErrResp{err.Error()})
 		return
 	}
-	validate := v.New()
-	if err := validate.Struct(req); err != nil {
+	if err := a.Validate.Struct(req); err != nil {
 		for _, e := range err.(validator.ValidationErrors) {
 			JSONResp(w, 422, &ErrResp{e.Translate(v.Trans)})
 			return
