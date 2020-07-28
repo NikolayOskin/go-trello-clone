@@ -35,7 +35,7 @@ func (a *app) InitRouting() {
 	a.Router.Route("/boards", func(r chi.Router) {
 		r.Use(mid.JWTCheck(a.Auth))
 		r.Use(mid.Verified)
-		ctrl := &controller.BoardController{}
+		ctrl := &controller.BoardController{Validate: a.Validator}
 		r.Get("/{id:[a-z0-9]+}", ctrl.GetFull)
 		r.With(mid.DecodeBoardObj).Put("/{id:[a-z0-9]{24}}", ctrl.Update)
 		r.Post("/", ctrl.Create)

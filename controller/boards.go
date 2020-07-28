@@ -5,12 +5,16 @@ import (
 	"github.com/NikolayOskin/go-trello-clone/model"
 	"github.com/NikolayOskin/go-trello-clone/repository"
 	"github.com/NikolayOskin/go-trello-clone/service/handlers"
+	v "github.com/NikolayOskin/go-trello-clone/service/validator"
 	"github.com/go-chi/chi"
+	"github.com/go-playground/validator/v10"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
 )
 
-type BoardController struct{}
+type BoardController struct {
+	Validate *validator.Validate
+}
 
 func (b *BoardController) GetFull(w http.ResponseWriter, r *http.Request) {
 	userCtx := r.Context().Value(mid.UserCtx).(model.User)
@@ -33,6 +37,12 @@ func (b *BoardController) Create(w http.ResponseWriter, r *http.Request) {
 	if err := decodeJSON(w, r, &board); err != nil {
 		JSONResp(w, err.(*malformedRequest).Status, &ErrResp{err.Error()})
 		return
+	}
+	if err := b.Validate.Struct(board); err != nil {
+		for _, e := range err.(validator.ValidationErrors) {
+			JSONResp(w, 422, &ErrResp{e.Translate(v.Trans)})
+			return
+		}
 	}
 	board.UserId = user.ID.Hex()
 	boardId, err := handlers.CreateBoard(board)
