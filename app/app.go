@@ -1,7 +1,8 @@
 package app
 
 import (
-	"github.com/go-playground/validator/v10"
+	"github.com/NikolayOskin/go-trello-clone/service/validator"
+	v "github.com/go-playground/validator/v10"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -15,7 +16,7 @@ import (
 type app struct {
 	Router    *chi.Mux
 	Auth      *auth.Auth
-	Validator *validator.Validate
+	Validator *v.Validate
 }
 
 func New() *app {
