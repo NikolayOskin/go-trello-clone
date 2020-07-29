@@ -7,27 +7,35 @@ import (
 	"github.com/NikolayOskin/go-trello-clone/repository"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"time"
 )
 
-func CreateBoard(b model.Board) (string, error) {
-	res, err := db.Boards.InsertOne(context.TODO(), b)
+func CreateBoard(ctx context.Context, b model.Board) (string, error) {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	res, err := db.Boards.InsertOne(ctx, b)
 	if err != nil {
 		return "", err
 	}
 	return res.InsertedID.(primitive.ObjectID).Hex(), nil
 }
 
-func UpdateBoard(b model.Board) error {
+func UpdateBoard(ctx context.Context, b model.Board) error {
 	f := bson.M{"_id": b.ID, "user_id": b.UserId}
-	if _, err := db.Boards.UpdateOne(context.TODO(), f, bson.M{"$set": b}); err != nil {
+
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	if _, err := db.Boards.UpdateOne(ctx, f, bson.M{"$set": b}); err != nil {
 		return err
 	}
 	return nil
 }
 
-func FillBoardWithListsAndCards(b *model.Board) error {
+func FillBoardWithListsAndCards(ctx context.Context, b *model.Board) error {
 	listsRepo := repository.Lists{}
-	lists, err := listsRepo.GetByBoardId(b.ID.Hex())
+	lists, err := listsRepo.GetByBoardId(ctx, b.ID.Hex())
 	if err != nil {
 		return err
 	}
@@ -37,7 +45,7 @@ func FillBoardWithListsAndCards(b *model.Board) error {
 	}
 
 	cardsRepo := repository.Cards{}
-	cards, err := cardsRepo.GetByBoardId(b.ID.Hex())
+	cards, err := cardsRepo.GetByBoardId(ctx, b.ID.Hex())
 	if err != nil {
 		return err
 	}

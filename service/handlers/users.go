@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-func CreateUser(user model.User, ctx context.Context) error {
+func CreateUser(ctx context.Context, user model.User) error {
 	hash, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.MinCost)
 	if err != nil {
 		return err

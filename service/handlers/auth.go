@@ -15,7 +15,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func Authenticate(reqUser *model.User, ctx context.Context) error {
+func Authenticate(ctx context.Context, reqUser *model.User) error {
 	var user model.User
 	filter := bson.M{"email": reqUser.Email}
 
@@ -33,7 +33,7 @@ func Authenticate(reqUser *model.User, ctx context.Context) error {
 	return nil
 }
 
-func VerifyEmail(u model.User, code string, ctx context.Context) error {
+func VerifyEmail(ctx context.Context, u model.User, code string) error {
 	var user model.User
 
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
@@ -47,6 +47,9 @@ func VerifyEmail(u model.User, code string, ctx context.Context) error {
 	}
 	user.Verify()
 
+	ctx, cancel = context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
 	if _, err := db.Users.UpdateOne(ctx, bson.M{"_id": u.ID}, bson.M{"$set": user}); err != nil {
 		return err
 	}
@@ -54,7 +57,7 @@ func VerifyEmail(u model.User, code string, ctx context.Context) error {
 	return nil
 }
 
-func ResetPassword(email string, ctx context.Context) error {
+func ResetPassword(ctx context.Context, email string) error {
 	var u model.User
 
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
@@ -64,6 +67,10 @@ func ResetPassword(email string, ctx context.Context) error {
 		return errors.New("user with this email does not exist")
 	}
 	u.ResetPasswordCode = primitive.NewObjectID().Hex()
+
+	ctx, cancel = context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
 	_, err := db.Users.UpdateOne(ctx, bson.M{"email": email},
 		bson.D{
 			{"$set", bson.D{
@@ -88,9 +95,13 @@ func ResetPassword(email string, ctx context.Context) error {
 	return nil
 }
 
-func SetNewPassword(email string, code string, password string) error {
+func SetNewPassword(ctx context.Context, email string, code string, password string) error {
 	var u model.User
-	if err := db.Users.FindOne(context.TODO(), bson.M{"email": email}).Decode(&u); err != nil {
+
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	if err := db.Users.FindOne(ctx, bson.M{"email": email}).Decode(&u); err != nil {
 		return errors.New("user with this email does not exist")
 	}
 	if u.ResetPasswordCode != code {
@@ -105,7 +116,10 @@ func SetNewPassword(email string, code string, password string) error {
 		return err
 	}
 
-	_, err = db.Users.UpdateOne(context.TODO(), bson.M{"email": email},
+	ctx, cancel = context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	_, err = db.Users.UpdateOne(ctx, bson.M{"email": email},
 		bson.D{
 			{"$set", bson.D{{"password", string(hash)}}},
 		})

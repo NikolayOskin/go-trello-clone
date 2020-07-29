@@ -8,11 +8,12 @@ import (
 	"github.com/NikolayOskin/go-trello-clone/repository"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"time"
 )
 
-func CreateCard(c model.Card) (string, error) {
+func CreateCard(ctx context.Context, c model.Card) (string, error) {
 	repo := repository.Lists{}
-	list, err := repo.GetById(c.ListId)
+	list, err := repo.GetById(ctx, c.ListId)
 	if err != nil {
 		return "", err
 	}
@@ -27,16 +28,16 @@ func CreateCard(c model.Card) (string, error) {
 	return res.InsertedID.(primitive.ObjectID).Hex(), nil
 }
 
-func UpdateCard(c model.Card) error {
+func UpdateCard(ctx context.Context, c model.Card) error {
 	cardsRepo := repository.Cards{}
 	listsRepo := repository.Lists{}
 
-	card, err := cardsRepo.GetById(c.ID.Hex())
+	card, err := cardsRepo.GetById(ctx, c.ID.Hex())
 	if err != nil {
 		return err
 	}
 
-	list, err := listsRepo.GetById(c.ListId)
+	list, err := listsRepo.GetById(ctx, c.ListId)
 	if err != nil {
 		return err
 	}
@@ -47,7 +48,11 @@ func UpdateCard(c model.Card) error {
 	}
 
 	filter := bson.M{"_id": c.ID}
-	if _, err := db.Cards.UpdateOne(context.TODO(), filter, bson.M{"$set": c}); err != nil {
+
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	if _, err := db.Cards.UpdateOne(ctx, filter, bson.M{"$set": c}); err != nil {
 		return err
 	}
 	return nil
