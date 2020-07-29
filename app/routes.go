@@ -18,6 +18,7 @@ func (a *app) InitRouting() {
 
 	a.Router.Route("/auth", func(r chi.Router) {
 		ctrl := &controller.AuthController{AuthService: a.Auth, Validate: a.Validator}
+
 		r.Post("/sign-in", ctrl.SignIn)
 		r.Post("/sign-up", ctrl.SignUp)
 		r.Post("/reset-password", ctrl.ResetPassword)
@@ -26,34 +27,35 @@ func (a *app) InitRouting() {
 	})
 
 	a.Router.Route("/users", func(r chi.Router) {
-		r.Use(mid.JWTCheck(a.Auth))
 		ctrl := &controller.UserController{}
+
+		r.Use(mid.JWTCheck(a.Auth))
 		r.Get("/me", ctrl.GetAuthUser)
 		r.With(mid.Verified).Get("/me/boards", ctrl.GetBoards)
 	})
 
 	a.Router.Route("/boards", func(r chi.Router) {
-		r.Use(mid.JWTCheck(a.Auth))
-		r.Use(mid.Verified)
 		ctrl := &controller.BoardController{Validate: a.Validator}
+
+		r.Use(mid.JWTCheck(a.Auth), mid.Verified)
 		r.Get("/{id:[a-z0-9]+}", ctrl.GetFull)
 		r.With(mid.DecodeBoardObj(a.Validator)).Put(idPattern, ctrl.Update)
 		r.Post("/", ctrl.Create)
 	})
 
 	a.Router.Route("/cards", func(r chi.Router) {
-		r.Use(mid.JWTCheck(a.Auth))
-		r.Use(mid.Verified)
 		ctrl := &controller.CardController{}
+
+		r.Use(mid.JWTCheck(a.Auth), mid.Verified)
 		r.Post("/", ctrl.Create)
 		r.With(mid.DecodeCardObj(a.Validator)).Put(idPattern, ctrl.Update)
 		r.Delete(idPattern, ctrl.Delete)
 	})
 
 	a.Router.Route("/lists", func(r chi.Router) {
-		r.Use(mid.JWTCheck(a.Auth))
-		r.Use(mid.Verified)
 		ctrl := &controller.ListController{Validate: a.Validator}
+
+		r.Use(mid.JWTCheck(a.Auth), mid.Verified)
 		r.Post("/", ctrl.Create)
 		r.With(mid.DecodeListObj(a.Validator)).Put(idPattern, ctrl.Update)
 		r.Delete(idPattern, ctrl.Delete)
