@@ -19,11 +19,11 @@ func (b *Boards) FetchByUser(ctx context.Context, user model.User) ([]model.Boar
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	cursor, err := db.Boards.Find(context.TODO(), filter)
+	cursor, err := db.Boards.Find(ctx, filter)
 	if err != nil {
 		return nil, err
 	}
-	if err = cursor.All(context.TODO(), &boards); err != nil {
+	if err = cursor.All(ctx, &boards); err != nil {
 		return nil, err
 	}
 
@@ -40,7 +40,7 @@ func (b *Boards) GetById(ctx context.Context, id string) (*model.Board, error) {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	if err := db.Boards.FindOne(context.TODO(), bson.M{"_id": objId}).Decode(&board); err != nil {
+	if err := db.Boards.FindOne(ctx, bson.M{"_id": objId}).Decode(&board); err != nil {
 		return nil, err
 	}
 
