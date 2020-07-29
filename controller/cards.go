@@ -10,6 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
+	"time"
 )
 
 type CardController struct{}
@@ -22,7 +23,7 @@ func (c *CardController) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	card.UserId = user.ID.Hex()
-	cardId, err := handlers.CreateCard(card)
+	cardId, err := handlers.CreateCard(r.Context(), card)
 	if err != nil {
 		JSONResp(w, 500, &ErrResp{Message: "Server error"})
 		return
@@ -38,7 +39,7 @@ func (c *CardController) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	card.ID = id
-	if err = handlers.UpdateCard(card); err != nil {
+	if err = handlers.UpdateCard(r.Context(), card); err != nil {
 		JSONResp(w, 200, &ErrResp{Message: "Server error"})
 		return
 	}
@@ -53,7 +54,11 @@ func (c *CardController) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	filter := bson.M{"_id": id, "user_id": user.ID.Hex()}
-	if _, err = db.Cards.DeleteOne(context.TODO(), filter); err != nil {
+
+	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	defer cancel()
+
+	if _, err = db.Cards.DeleteOne(ctx, filter); err != nil {
 		JSONResp(w, 500, &ErrResp{Message: err.Error()})
 		return
 	}

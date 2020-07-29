@@ -29,7 +29,7 @@ func (l *ListController) Create(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	listId, err := handlers.CreateList(list)
+	listId, err := handlers.CreateList(r.Context(), list)
 	if err != nil {
 		JSONResp(w, 400, &ErrResp{Message: err.Error()})
 		return
@@ -45,7 +45,7 @@ func (l *ListController) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	list.ID = id
-	if err = handlers.UpdateList(list); err != nil {
+	if err = handlers.UpdateList(r.Context(), list); err != nil {
 		JSONResp(w, 500, &ErrResp{Message: "Server error"})
 		return
 	}
@@ -59,7 +59,7 @@ func (l *ListController) Delete(w http.ResponseWriter, r *http.Request) {
 		JSONResp(w, 500, &ErrResp{Message: err.Error()})
 		return
 	}
-	if err := handlers.DeleteList(id, user); err != nil {
+	if err := handlers.DeleteList(r.Context(), id, user); err != nil {
 		JSONResp(w, 500, &ErrResp{Message: err.Error()})
 		return
 	}

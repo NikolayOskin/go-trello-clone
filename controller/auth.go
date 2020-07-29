@@ -1,13 +1,13 @@
 package controller
 
 import (
-	v "github.com/NikolayOskin/go-trello-clone/service/validator"
 	"net/http"
 
 	mid "github.com/NikolayOskin/go-trello-clone/controller/middleware"
 	"github.com/NikolayOskin/go-trello-clone/model"
 	"github.com/NikolayOskin/go-trello-clone/service/auth"
 	"github.com/NikolayOskin/go-trello-clone/service/handlers"
+	v "github.com/NikolayOskin/go-trello-clone/service/validator"
 	"github.com/go-chi/chi"
 	"github.com/go-playground/validator/v10"
 )
@@ -27,7 +27,7 @@ func (a *AuthController) SignIn(w http.ResponseWriter, r *http.Request) {
 		JSONResp(w, 422, &ErrResp{"username or password can't be empty"})
 		return
 	}
-	if err := handlers.Authenticate(&user, r.Context()); err != nil {
+	if err := handlers.Authenticate(r.Context(), &user); err != nil {
 		JSONResp(w, 400, &ErrResp{err.Error()})
 		return
 	}
@@ -51,7 +51,7 @@ func (a *AuthController) SignUp(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	if err := handlers.CreateUser(user, r.Context()); err != nil {
+	if err := handlers.CreateUser(r.Context(), user); err != nil {
 		JSONResp(w, 400, &ErrResp{err.Error()})
 		return
 	}
@@ -61,7 +61,7 @@ func (a *AuthController) SignUp(w http.ResponseWriter, r *http.Request) {
 func (a *AuthController) VerifyEmail(w http.ResponseWriter, r *http.Request) {
 	user := r.Context().Value(mid.UserCtx).(model.User)
 	code := chi.URLParam(r, "code")
-	if err := handlers.VerifyEmail(user, code, r.Context()); err != nil {
+	if err := handlers.VerifyEmail(r.Context(), user, code); err != nil {
 		JSONResp(w, 400, &ErrResp{err.Error()})
 		return
 	}
@@ -80,7 +80,7 @@ func (a *AuthController) ResetPassword(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	if err := handlers.ResetPassword(req.Email, r.Context()); err != nil {
+	if err := handlers.ResetPassword(r.Context(), req.Email); err != nil {
 		JSONResp(w, 400, &ErrResp{err.Error()})
 		return
 	}
@@ -99,7 +99,7 @@ func (a *AuthController) NewPassword(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	if err := handlers.SetNewPassword(req.Email, req.Code, req.Password); err != nil {
+	if err := handlers.SetNewPassword(r.Context(), req.Email, req.Code, req.Password); err != nil {
 		JSONResp(w, 400, &ErrResp{err.Error()})
 		return
 	}

@@ -19,12 +19,12 @@ type BoardController struct {
 func (b *BoardController) GetFull(w http.ResponseWriter, r *http.Request) {
 	userCtx := r.Context().Value(mid.UserCtx).(model.User)
 	boardRepo := repository.Boards{}
-	board, err := boardRepo.GetById(chi.URLParam(r, "id"))
+	board, err := boardRepo.GetById(r.Context(), chi.URLParam(r, "id"))
 	if err != nil || board == nil || board.UserId != userCtx.ID.Hex() {
 		JSONResp(w, 404, &ErrResp{Message: "Not found"})
 		return
 	}
-	if err := handlers.FillBoardWithListsAndCards(board); err != nil {
+	if err := handlers.FillBoardWithListsAndCards(r.Context(), board); err != nil {
 		JSONResp(w, 500, &ErrResp{Message: err.Error()})
 		return
 	}
@@ -45,7 +45,7 @@ func (b *BoardController) Create(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	board.UserId = user.ID.Hex()
-	boardId, err := handlers.CreateBoard(board)
+	boardId, err := handlers.CreateBoard(r.Context(), board)
 	if err != nil {
 		JSONResp(w, 500, &ErrResp{Message: "Server error"})
 		return
@@ -61,7 +61,7 @@ func (b *BoardController) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	board.ID = id
-	if err := handlers.UpdateBoard(board); err != nil {
+	if err := handlers.UpdateBoard(r.Context(), board); err != nil {
 		JSONResp(w, 500, &ErrResp{Message: "Server error"})
 		return
 	}
