@@ -10,7 +10,7 @@ import (
 )
 
 func (a *app) InitRouting() {
-	a.Router = chi.NewRouter()
+	const idPattern = "/{id:[a-z0-9]{24}}"
 
 	a.Router.Use(middleware.Logger)
 	a.Router.Use(middleware.AllowContentType("application/json"))
@@ -37,7 +37,7 @@ func (a *app) InitRouting() {
 		r.Use(mid.Verified)
 		ctrl := &controller.BoardController{Validate: a.Validator}
 		r.Get("/{id:[a-z0-9]+}", ctrl.GetFull)
-		r.With(mid.DecodeBoardObj).Put("/{id:[a-z0-9]{24}}", ctrl.Update)
+		r.With(mid.DecodeBoardObj(a.Validator)).Put(idPattern, ctrl.Update)
 		r.Post("/", ctrl.Create)
 	})
 
@@ -46,8 +46,8 @@ func (a *app) InitRouting() {
 		r.Use(mid.Verified)
 		ctrl := &controller.CardController{}
 		r.Post("/", ctrl.Create)
-		r.With(mid.DecodeCardObj).Put("/{id:[a-z0-9]{24}}", ctrl.Update)
-		r.Delete("/{id:[a-z0-9]{24}}", ctrl.Delete)
+		r.With(mid.DecodeCardObj(a.Validator)).Put(idPattern, ctrl.Update)
+		r.Delete(idPattern, ctrl.Delete)
 	})
 
 	a.Router.Route("/lists", func(r chi.Router) {
@@ -55,8 +55,8 @@ func (a *app) InitRouting() {
 		r.Use(mid.Verified)
 		ctrl := &controller.ListController{Validate: a.Validator}
 		r.Post("/", ctrl.Create)
-		r.With(mid.DecodeListObj).Put("/{id:[a-z0-9]{24}}", ctrl.Update)
-		r.Delete("/{id:[a-z0-9]{24}}", ctrl.Delete)
+		r.With(mid.DecodeListObj(a.Validator)).Put(idPattern, ctrl.Update)
+		r.Delete(idPattern, ctrl.Delete)
 	})
 }
 
