@@ -1,10 +1,11 @@
 package controller
 
 import (
+	"net/http"
+
 	mid "github.com/NikolayOskin/go-trello-clone/controller/middleware"
 	"github.com/NikolayOskin/go-trello-clone/model"
 	"github.com/NikolayOskin/go-trello-clone/repository"
-	"net/http"
 )
 
 type UserController struct{}
@@ -14,7 +15,7 @@ func (u *UserController) GetAuthUser(w http.ResponseWriter, r *http.Request) {
 	repo := repository.Users{}
 	user, err := repo.GetById(r.Context(), userCtx.ID.Hex())
 	if err != nil {
-		JSONResp(w, 500, &ErrResp{Message: "Could not fetch user"})
+		JSONResp(w, 500, ErrResp{Message: "Could not fetch user"})
 		return
 	}
 	readUser := model.ReadUser{
@@ -33,7 +34,7 @@ func (u *UserController) GetBoards(w http.ResponseWriter, r *http.Request) {
 	boardsRepo := repository.Boards{}
 	boards, err := boardsRepo.FetchByUser(r.Context(), user)
 	if err != nil {
-		JSONResp(w, 500, &ErrResp{Message: "Could not fetch user boards"})
+		JSONResp(w, 500, ErrResp{Message: "Could not fetch user boards"})
 		return
 	}
 	JSONResp(w, 200, boards)

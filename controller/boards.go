@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"net/http"
+
 	mid "github.com/NikolayOskin/go-trello-clone/controller/middleware"
 	"github.com/NikolayOskin/go-trello-clone/model"
 	"github.com/NikolayOskin/go-trello-clone/repository"
@@ -9,7 +11,6 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-playground/validator/v10"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"net/http"
 )
 
 type BoardController struct {
@@ -21,11 +22,11 @@ func (b *BoardController) GetFull(w http.ResponseWriter, r *http.Request) {
 	boardRepo := repository.Boards{}
 	board, err := boardRepo.GetById(r.Context(), chi.URLParam(r, "id"))
 	if err != nil || board == nil || board.UserId != userCtx.ID.Hex() {
-		JSONResp(w, 404, &ErrResp{Message: "Not found"})
+		JSONResp(w, 404, ErrResp{Message: "Not found"})
 		return
 	}
 	if err := handlers.FillBoardWithListsAndCards(r.Context(), board); err != nil {
-		JSONResp(w, 500, &ErrResp{Message: err.Error()})
+		JSONResp(w, 500, ErrResp{Message: err.Error()})
 		return
 	}
 	JSONResp(w, 200, board)
@@ -35,35 +36,35 @@ func (b *BoardController) Create(w http.ResponseWriter, r *http.Request) {
 	var board model.Board
 	user := r.Context().Value(mid.UserCtx).(model.User)
 	if err := decodeJSON(w, r, &board); err != nil {
-		JSONResp(w, err.(*malformedRequest).Status, &ErrResp{err.Error()})
+		JSONResp(w, err.(*malformedRequest).Status, ErrResp{err.Error()})
 		return
 	}
 	if err := b.Validate.Struct(board); err != nil {
 		for _, e := range err.(validator.ValidationErrors) {
-			JSONResp(w, 422, &ErrResp{e.Translate(v.Trans)})
+			JSONResp(w, 422, ErrResp{e.Translate(v.Trans)})
 			return
 		}
 	}
 	board.UserId = user.ID.Hex()
 	boardId, err := handlers.CreateBoard(r.Context(), board)
 	if err != nil {
-		JSONResp(w, 500, &ErrResp{Message: "Server error"})
+		JSONResp(w, 500, ErrResp{Message: "Server error"})
 		return
 	}
-	JSONResp(w, 201, &CreatedResponse{Message: "Created", Id: boardId})
+	JSONResp(w, 201, CreatedResponse{Message: "Created", Id: boardId})
 }
 
 func (b *BoardController) Update(w http.ResponseWriter, r *http.Request) {
 	board := r.Context().Value(mid.BoardCtx).(model.Board)
 	id, err := primitive.ObjectIDFromHex(chi.URLParam(r, "id"))
 	if err != nil {
-		JSONResp(w, 500, &ErrResp{Message: "Server error"})
+		JSONResp(w, 500, ErrResp{Message: "Server error"})
 		return
 	}
 	board.ID = id
 	if err := handlers.UpdateBoard(r.Context(), board); err != nil {
-		JSONResp(w, 500, &ErrResp{Message: "Server error"})
+		JSONResp(w, 500, ErrResp{Message: "Server error"})
 		return
 	}
-	JSONResp(w, 200, &Response{Message: "Updated"})
+	JSONResp(w, 200, Response{Message: "Updated"})
 }
