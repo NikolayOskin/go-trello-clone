@@ -3,15 +3,16 @@ package db
 import (
 	"context"
 	"fmt"
+	"log"
+	"net/url"
+	"os"
+	"time"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"log"
-	"os"
-	"time"
 )
 
-var Client *mongo.Client
 var Users *mongo.Collection
 var Boards *mongo.Collection
 var Lists *mongo.Collection
@@ -21,16 +22,19 @@ func InitDB() {
 	login := os.Getenv("MONGODB_LOGIN")
 	pass := os.Getenv("MONGODB_PASSWORD")
 	host := os.Getenv("MONGODB_HOST")
-	port := os.Getenv("MONGODB_PORT")
 	dbname := os.Getenv("MONGODB_DBNAME")
 
 	if os.Getenv("APP_ENV") == "test" {
 		dbname = os.Getenv("MONGODB_TEST_DBNAME")
 	}
 
-	dbUri := fmt.Sprintf("mongodb://%v:%v@%v:%v", login, pass, host, port)
+	u := url.URL{
+		Scheme: "mongodb",
+		User:   url.UserPassword(login, pass),
+		Host:   host,
+	}
 
-	clientOptions := options.Client().ApplyURI(dbUri)
+	clientOptions := options.Client().ApplyURI(u.String())
 
 	ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
 	client, err := mongo.Connect(ctx, clientOptions)
@@ -42,9 +46,10 @@ func InitDB() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	db := client.Database(dbname)
 
-	Client = client
+	log.Println("Connected to mongodb")
+
+	db := client.Database(dbname)
 
 	Users = db.Collection("users")
 	Boards = db.Collection("boards")
