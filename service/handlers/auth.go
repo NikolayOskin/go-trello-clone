@@ -12,6 +12,7 @@ import (
 	mailer "github.com/NikolayOskin/go-trello-clone/service"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -23,7 +24,10 @@ func Authenticate(ctx context.Context, reqUser *model.User) error {
 	defer cancel()
 
 	if err := db.Users.FindOne(ctx, filter).Decode(&user); err != nil {
-		return errors.New("invalid credentials")
+		if err == mongo.ErrNoDocuments {
+			return errors.New("invalid credentials")
+		}
+		return err
 	}
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(reqUser.Password)); err != nil {
 		return errors.New("invalid credentials")
@@ -40,6 +44,9 @@ func VerifyEmail(ctx context.Context, u model.User, code string) error {
 	defer cancel()
 
 	if err := db.Users.FindOne(ctx, bson.M{"_id": u.ID}).Decode(&user); err != nil {
+		if err == mongo.ErrNoDocuments {
+			return errors.New("user not found")
+		}
 		return err
 	}
 	if user.VerificationCode != code {
@@ -64,7 +71,10 @@ func ResetPassword(ctx context.Context, email string) error {
 	defer cancel()
 
 	if err := db.Users.FindOne(ctx, bson.M{"email": email}).Decode(&u); err != nil {
-		return errors.New("user with this email does not exist")
+		if err == mongo.ErrNoDocuments {
+			return errors.New("user not found")
+		}
+		return err
 	}
 	u.ResetPasswordCode = primitive.NewObjectID().Hex()
 
