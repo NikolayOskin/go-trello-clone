@@ -34,19 +34,19 @@ func UpdateBoard(ctx context.Context, b model.Board) error {
 	return nil
 }
 
-func FillBoardWithListsAndCards(ctx context.Context, b *model.Board) error {
+func FillBoardWithListsAndCards(ctx context.Context, board *model.Board) error {
 	listsRepo := repository.Lists{}
-	lists, err := listsRepo.GetByBoardId(ctx, b.ID.Hex())
+	lists, err := listsRepo.GetByBoardId(ctx, board.ID.Hex())
 	if err != nil {
 		return err
 	}
 	if len(lists) == 0 {
-		b.Lists = make([]model.List, 0) // for json empty array instead of null
+		board.Lists = make([]model.List, 0) // for json empty array instead of null
 		return nil
 	}
 
 	cardsRepo := repository.Cards{}
-	cards, err := cardsRepo.GetByBoardId(ctx, b.ID.Hex())
+	cards, err := cardsRepo.GetByBoardId(ctx, board.ID.Hex())
 	if err != nil {
 		return err
 	}
@@ -61,7 +61,7 @@ func FillBoardWithListsAndCards(ctx context.Context, b *model.Board) error {
 			lists[i].Cards = cardsMap[list.ID.Hex()]
 		}
 	}
-	b.Lists = lists
+	board.Lists = lists
 
 	return nil
 }
