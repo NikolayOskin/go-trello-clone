@@ -52,7 +52,7 @@ func FillBoardWithListsAndCards(ctx context.Context, b *model.Board) error {
 	}
 
 	// combining cards to map by listId
-	cardsMap := generateCardsMap(cards)
+	cardsMap := mapCardsByListId(cards, len(lists))
 
 	for i, list := range lists {
 		if _, found := cardsMap[list.ID.Hex()]; !found {
@@ -66,14 +66,16 @@ func FillBoardWithListsAndCards(ctx context.Context, b *model.Board) error {
 	return nil
 }
 
-func generateCardsMap(cards []model.Card) map[string][]model.Card {
+func mapCardsByListId(cards []model.Card, listsCount int) map[string][]model.Card {
 	cardsMap := make(map[string][]model.Card)
+	avgListLength := len(cards)/listsCount + 1
 
-	for _, card := range cards {
-		if _, found := cardsMap[card.ListId]; found {
-			cardsMap[card.ListId] = append(cardsMap[card.ListId], card)
+	for _, c := range cards {
+		if _, found := cardsMap[c.ListId]; found {
+			cardsMap[c.ListId] = append(cardsMap[c.ListId], c)
 		} else {
-			cardsMap[card.ListId] = []model.Card{card}
+			s := make([]model.Card, 0, avgListLength) // preallocate slice with average cards per list capacity
+			cardsMap[c.ListId] = append(s, c)
 		}
 	}
 
