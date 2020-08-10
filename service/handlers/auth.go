@@ -110,6 +110,7 @@ func SetNewPassword(ctx context.Context, email string, code string, password str
 	_, err = db.Users.UpdateOne(ctx, bson.M{"email": email},
 		bson.D{
 			{"$set", bson.D{{"password", string(hash)}}},
+			{"$unset", bson.A{"reset_password_code", "reset_password_expired_at"}},
 		})
 	if err != nil {
 		return err
