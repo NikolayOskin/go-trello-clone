@@ -13,12 +13,15 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+var client *mongo.Client
 var Users *mongo.Collection
 var Boards *mongo.Collection
 var Lists *mongo.Collection
 var Cards *mongo.Collection
 
 func InitDB() {
+	var err error
+
 	login := os.Getenv("MONGODB_LOGIN")
 	pass := os.Getenv("MONGODB_PASSWORD")
 	host := os.Getenv("MONGODB_HOST")
@@ -37,7 +40,8 @@ func InitDB() {
 	clientOptions := options.Client().ApplyURI(u.String())
 
 	ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
-	client, err := mongo.Connect(ctx, clientOptions)
+
+	client, err = mongo.Connect(ctx, clientOptions)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -57,6 +61,16 @@ func InitDB() {
 	Cards = db.Collection("cards")
 
 	createIndexes()
+}
+
+func Disconnect() {
+	if client != nil {
+		err := client.Disconnect(context.Background())
+		if err != nil {
+			log.Println(err)
+		}
+		log.Println("Disconnected from MongoDB")
+	}
 }
 
 func createIndexes() {
