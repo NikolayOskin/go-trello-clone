@@ -1,16 +1,23 @@
 package app
 
 import (
-	"github.com/NikolayOskin/go-trello-clone/service/validator"
-	v "github.com/go-playground/validator/v10"
+	"context"
 	"io/ioutil"
 	"log"
+	"net"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
+	"github.com/NikolayOskin/go-trello-clone/db"
 	mailer "github.com/NikolayOskin/go-trello-clone/service"
 	"github.com/NikolayOskin/go-trello-clone/service/auth"
+	"github.com/NikolayOskin/go-trello-clone/service/validator"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/go-chi/chi"
+	v "github.com/go-playground/validator/v10"
 )
 
 type app struct {
@@ -58,10 +65,34 @@ func New() *app {
 func (a *app) RunServer(addr string) {
 	log.Println("Starting server...")
 
-	err := http.ListenAndServe(addr, a.Router)
-	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+	srv := http.Server{
+		Addr:    net.JoinHostPort("", serverPort),
+		Handler: a.Router,
 	}
+
+	go func() {
+		err := srv.ListenAndServe()
+		if err != nil && err != http.ErrServerClosed {
+			log.Fatalf("failed to listen: %v", err)
+		}
+		log.Printf("Server started. API listening on %s", net.JoinHostPort("", serverPort))
+	}()
+
+	select {
+	case sig := <-shutdown:
+		log.Printf("%v : Shutting down the server...", sig)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	srv.SetKeepAlivesEnabled(false)
+	if err := srv.Shutdown(ctx); err != nil {
+		_ = srv.Close()
+		log.Println("Could not stop the server gracefully")
+		return
+	}
+	log.Println("Server stopped")
 }
 
 func (a *app) InitServices() {
