@@ -62,8 +62,19 @@ func New() *app {
 	}
 }
 
-func (a *app) RunServer(addr string) {
-	log.Println("Starting server...")
+func (a *app) Run() {
+	serverPort := os.Getenv("HTTP_SERVER_PORT")
+	if serverPort == "" {
+		log.Fatal("HTTP_SERVER_PORT env is not set")
+	}
+
+	db.InitDB()
+	defer db.Disconnect()
+
+	log.Println("Ready to start server...")
+
+	shutdown := make(chan os.Signal, 1)
+	signal.Notify(shutdown, os.Interrupt, syscall.SIGTERM)
 
 	srv := http.Server{
 		Addr:    net.JoinHostPort("", serverPort),
