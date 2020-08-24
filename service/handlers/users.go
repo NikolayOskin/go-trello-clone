@@ -3,15 +3,17 @@ package handlers
 import (
 	"context"
 	"errors"
+	"os"
+
 	"github.com/NikolayOskin/go-trello-clone/db"
 	pb "github.com/NikolayOskin/go-trello-clone/mailer/src"
 	"github.com/NikolayOskin/go-trello-clone/model"
 	mailer "github.com/NikolayOskin/go-trello-clone/service"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"os"
+
+	"time"
 
 	"golang.org/x/crypto/bcrypt"
-	"time"
 )
 
 func CreateUser(ctx context.Context, user model.User) error {

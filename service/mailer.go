@@ -2,10 +2,11 @@ package mailer
 
 import (
 	"context"
-	pb "github.com/NikolayOskin/go-trello-clone/mailer/src"
-	"google.golang.org/grpc"
 	"log"
 	"os"
+
+	pb "github.com/NikolayOskin/go-trello-clone/mailer/src"
+	"google.golang.org/grpc"
 )
 
 var client pb.MailerClient
