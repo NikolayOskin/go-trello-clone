@@ -13,8 +13,7 @@ import (
 )
 
 func CreateList(ctx context.Context, list model.List) (string, error) {
-	repo := repository.Boards{}
-	board, err := repo.GetById(ctx, list.BoardId)
+	board, err := repository.Boards.GetById(ctx, list.BoardId)
 	if err != nil {
 		return "", err
 	}

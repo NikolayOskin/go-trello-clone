@@ -13,8 +13,7 @@ import (
 )
 
 func CreateCard(ctx context.Context, c model.Card) (string, error) {
-	repo := repository.Lists{}
-	list, err := repo.GetById(ctx, c.ListId)
+	list, err := repository.Lists.GetById(ctx, c.ListId)
 	if err != nil {
 		return "", err
 	}
@@ -30,15 +29,12 @@ func CreateCard(ctx context.Context, c model.Card) (string, error) {
 }
 
 func UpdateCard(ctx context.Context, c model.Card) error {
-	cardsRepo := repository.Cards{}
-	listsRepo := repository.Lists{}
-
-	card, err := cardsRepo.GetById(ctx, c.ID.Hex())
+	card, err := repository.Cards.GetById(ctx, c.ID.Hex())
 	if err != nil {
 		return err
 	}
 
-	list, err := listsRepo.GetById(ctx, c.ListId)
+	list, err := repository.Lists.GetById(ctx, c.ListId)
 	if err != nil {
 		return err
 	}

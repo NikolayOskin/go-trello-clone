@@ -12,9 +12,11 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-type Users struct{}
+type userRepository struct{}
 
-func (b *Users) FindById(ctx context.Context, id string) (*model.User, error) {
+var Users userRepository
+
+func (u userRepository) FindById(ctx context.Context, id string) (*model.User, error) {
 	var user model.User
 	objId, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -34,7 +36,7 @@ func (b *Users) FindById(ctx context.Context, id string) (*model.User, error) {
 	return &user, nil
 }
 
-func (b *Users) FindByEmail(ctx context.Context, email string) (*model.User, error) {
+func (u userRepository) FindByEmail(ctx context.Context, email string) (*model.User, error) {
 	var user model.User
 
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)

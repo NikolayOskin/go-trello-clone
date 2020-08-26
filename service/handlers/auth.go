@@ -17,8 +17,7 @@ import (
 )
 
 func Authenticate(ctx context.Context, reqUser *model.User) error {
-	userRepo := repository.Users{}
-	user, err := userRepo.FindByEmail(ctx, reqUser.Email)
+	user, err := repository.Users.FindByEmail(ctx, reqUser.Email)
 	if err != nil {
 		return err
 	}
@@ -31,8 +30,7 @@ func Authenticate(ctx context.Context, reqUser *model.User) error {
 }
 
 func VerifyEmail(ctx context.Context, u model.User, code string) error {
-	userRepo := repository.Users{}
-	user, err := userRepo.FindById(ctx, u.ID.Hex())
+	user, err := repository.Users.FindById(ctx, u.ID.Hex())
 	if err != nil {
 		return err
 	}
@@ -52,8 +50,7 @@ func VerifyEmail(ctx context.Context, u model.User, code string) error {
 }
 
 func ResetPassword(ctx context.Context, email string) error {
-	userRepo := repository.Users{}
-	user, err := userRepo.FindByEmail(ctx, email)
+	user, err := repository.Users.FindByEmail(ctx, email)
 	if err != nil {
 		return err
 	}
@@ -87,8 +84,7 @@ func ResetPassword(ctx context.Context, email string) error {
 }
 
 func SetNewPassword(ctx context.Context, email string, code string, password string) error {
-	userRepo := repository.Users{}
-	user, err := userRepo.FindByEmail(ctx, email)
+	user, err := repository.Users.FindByEmail(ctx, email)
 	if err != nil {
 		return err
 	}

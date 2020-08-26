@@ -19,8 +19,7 @@ type BoardController struct {
 
 func (b *BoardController) GetFull(w http.ResponseWriter, r *http.Request) {
 	userCtx := r.Context().Value(mid.UserCtx).(model.User)
-	boardRepo := repository.Boards{}
-	board, err := boardRepo.GetById(r.Context(), chi.URLParam(r, "id"))
+	board, err := repository.Boards.GetById(r.Context(), chi.URLParam(r, "id"))
 	if err != nil || board == nil || board.UserId != userCtx.ID.Hex() {
 		JSONResp(w, 404, ErrResp{Message: "Not found"})
 		return

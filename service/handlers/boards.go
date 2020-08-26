@@ -35,8 +35,7 @@ func UpdateBoard(ctx context.Context, b model.Board) error {
 }
 
 func FillBoardWithListsAndCards(ctx context.Context, board *model.Board) error {
-	listsRepo := repository.Lists{}
-	lists, err := listsRepo.GetByBoardId(ctx, board.ID.Hex())
+	lists, err := repository.Lists.GetByBoardId(ctx, board.ID.Hex())
 	if err != nil {
 		return err
 	}
@@ -45,8 +44,7 @@ func FillBoardWithListsAndCards(ctx context.Context, board *model.Board) error {
 		return nil
 	}
 
-	cardsRepo := repository.Cards{}
-	cards, err := cardsRepo.GetByBoardId(ctx, board.ID.Hex())
+	cards, err := repository.Cards.GetByBoardId(ctx, board.ID.Hex())
 	if err != nil {
 		return err
 	}

@@ -10,9 +10,11 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type Lists struct{}
+type listRepository struct{}
 
-func (l *Lists) GetById(ctx context.Context, id string) (*model.List, error) {
+var Lists listRepository
+
+func (l listRepository) GetById(ctx context.Context, id string) (*model.List, error) {
 	var list model.List
 	objId, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -29,7 +31,7 @@ func (l *Lists) GetById(ctx context.Context, id string) (*model.List, error) {
 	return &list, nil
 }
 
-func (l *Lists) GetByBoardId(ctx context.Context, id string) ([]model.List, error) {
+func (l listRepository) GetByBoardId(ctx context.Context, id string) ([]model.List, error) {
 	var lists []model.List
 	filter := bson.D{{"board_id", id}}
 

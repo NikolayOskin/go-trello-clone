@@ -10,9 +10,11 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type Boards struct{}
+type boardRepository struct{}
 
-func (b *Boards) FetchByUser(ctx context.Context, user model.User) ([]model.Board, error) {
+var Boards boardRepository
+
+func (b boardRepository) FetchByUser(ctx context.Context, user model.User) ([]model.Board, error) {
 	var boards []model.Board
 	filter := bson.D{{"user_id", user.ID.Hex()}}
 
@@ -30,7 +32,7 @@ func (b *Boards) FetchByUser(ctx context.Context, user model.User) ([]model.Boar
 	return boards, nil
 }
 
-func (b *Boards) GetById(ctx context.Context, id string) (*model.Board, error) {
+func (b boardRepository) GetById(ctx context.Context, id string) (*model.Board, error) {
 	var board model.Board
 	objId, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
