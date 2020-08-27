@@ -62,7 +62,7 @@ func New() *app {
 	}
 }
 
-func (a *app) Run() {
+func (app *app) Run() {
 	serverPort := os.Getenv("HTTP_SERVER_PORT")
 	if serverPort == "" {
 		log.Fatal("HTTP_SERVER_PORT env is not set")
@@ -78,7 +78,7 @@ func (a *app) Run() {
 
 	srv := http.Server{
 		Addr:    net.JoinHostPort("", serverPort),
-		Handler: a.Router,
+		Handler: app.Router,
 	}
 
 	go func() {
@@ -106,6 +106,6 @@ func (a *app) Run() {
 	log.Println("Server stopped")
 }
 
-func (a *app) InitServices() {
+func (app *app) InitServices() {
 	mailer.Start()
 }
