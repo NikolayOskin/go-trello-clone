@@ -9,13 +9,13 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
-type Auth struct {
+type JWTService struct {
 	privateKey  *rsa.PrivateKey
 	publicKey   *rsa.PublicKey
 	jwtTTLHours time.Duration
 }
 
-func New(privateKey *rsa.PrivateKey, publicKey *rsa.PublicKey, jwtTTLHours time.Duration) (*Auth, error) {
+func NewJWTService(privateKey *rsa.PrivateKey, publicKey *rsa.PublicKey, jwtTTLHours time.Duration) (*JWTService, error) {
 	if privateKey == nil {
 		return nil, errors.New("PrivateKey cannot be nil")
 	}
@@ -23,14 +23,14 @@ func New(privateKey *rsa.PrivateKey, publicKey *rsa.PublicKey, jwtTTLHours time.
 		return nil, errors.New("PublicKey cannot be nil")
 	}
 
-	return &Auth{
+	return &JWTService{
 		privateKey,
 		publicKey,
 		jwtTTLHours,
 	}, nil
 }
 
-func (a *Auth) GenerateToken(user model.User) (string, error) {
+func (a *JWTService) GenerateToken(user model.User) (string, error) {
 	claims := model.JWTClaims{
 		User: model.User{
 			ID:    user.ID,
@@ -46,7 +46,7 @@ func (a *Auth) GenerateToken(user model.User) (string, error) {
 	return tokenStr, err
 }
 
-func (a *Auth) ValidateToken(tokenStr string) (*model.JWTClaims, error) {
+func (a *JWTService) ValidateToken(tokenStr string) (*model.JWTClaims, error) {
 	claims := model.JWTClaims{}
 
 	token, err := jwt.ParseWithClaims(tokenStr, &claims, func(token *jwt.Token) (interface{}, error) {

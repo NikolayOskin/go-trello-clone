@@ -21,9 +21,9 @@ import (
 )
 
 type app struct {
-	Router    *chi.Mux
-	Auth      *auth.Auth
-	Validator *v.Validate
+	Router     *chi.Mux
+	JWTService *auth.JWTService
+	Validator  *v.Validate
 }
 
 func New() *app {
@@ -48,17 +48,17 @@ func New() *app {
 		log.Fatal("cannot parse public key")
 	}
 
-	// Initiating Auth service
+	// Initiating JWTService service
 	const jwtTTLHours = 72 // jwt token life time in hours
-	a, err := auth.New(privateKey, publicKey, jwtTTLHours)
+	JWTService, err := auth.NewJWTService(privateKey, publicKey, jwtTTLHours)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	return &app{
-		Router:    chi.NewRouter(),
-		Auth:      a,
-		Validator: validator.New(),
+		Router:     chi.NewRouter(),
+		JWTService: JWTService,
+		Validator:  validator.New(),
 	}
 }
 
