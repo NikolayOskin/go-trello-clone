@@ -4,19 +4,19 @@ import (
 	"context"
 	"errors"
 	"os"
+	"time"
 
 	"github.com/NikolayOskin/go-trello-clone/db"
 	pb "github.com/NikolayOskin/go-trello-clone/mailer/src"
 	"github.com/NikolayOskin/go-trello-clone/model"
 	mailer "github.com/NikolayOskin/go-trello-clone/service"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-
-	"time"
-
 	"golang.org/x/crypto/bcrypt"
 )
 
-func CreateUser(ctx context.Context, user model.User) error {
+type User struct{}
+
+func (h User) Create(ctx context.Context, user model.User) error {
 	hash, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.MinCost)
 	if err != nil {
 		return err

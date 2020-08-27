@@ -12,7 +12,9 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func CreateCard(ctx context.Context, c model.Card) (string, error) {
+type Card struct{}
+
+func (h Card) CreateCard(ctx context.Context, c model.Card) (string, error) {
 	list, err := repository.Lists.GetById(ctx, c.ListId)
 	if err != nil {
 		return "", err
@@ -28,7 +30,7 @@ func CreateCard(ctx context.Context, c model.Card) (string, error) {
 	return res.InsertedID.(primitive.ObjectID).Hex(), nil
 }
 
-func UpdateCard(ctx context.Context, c model.Card) error {
+func (h Card) UpdateCard(ctx context.Context, c model.Card) error {
 	card, err := repository.Cards.GetById(ctx, c.ID.Hex())
 	if err != nil {
 		return err

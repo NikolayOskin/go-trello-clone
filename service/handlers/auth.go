@@ -16,7 +16,9 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func Authenticate(ctx context.Context, reqUser *model.User) error {
+type Auth struct{}
+
+func (h Auth) Authenticate(ctx context.Context, reqUser *model.User) error {
 	user, err := repository.Users.FindByEmail(ctx, reqUser.Email)
 	if err != nil {
 		return err
@@ -29,7 +31,7 @@ func Authenticate(ctx context.Context, reqUser *model.User) error {
 	return nil
 }
 
-func VerifyEmail(ctx context.Context, u model.User, code string) error {
+func (h Auth) VerifyEmail(ctx context.Context, u model.User, code string) error {
 	user, err := repository.Users.FindById(ctx, u.ID.Hex())
 	if err != nil {
 		return err
@@ -49,7 +51,7 @@ func VerifyEmail(ctx context.Context, u model.User, code string) error {
 	return nil
 }
 
-func ResetPassword(ctx context.Context, email string) error {
+func (h Auth) ResetPassword(ctx context.Context, email string) error {
 	user, err := repository.Users.FindByEmail(ctx, email)
 	if err != nil {
 		return err
@@ -83,7 +85,7 @@ func ResetPassword(ctx context.Context, email string) error {
 	return nil
 }
 
-func SetNewPassword(ctx context.Context, email string, code string, password string) error {
+func (h Auth) SetNewPassword(ctx context.Context, email string, code string, password string) error {
 	user, err := repository.Users.FindByEmail(ctx, email)
 	if err != nil {
 		return err

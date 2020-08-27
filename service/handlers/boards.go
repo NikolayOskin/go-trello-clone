@@ -11,7 +11,9 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func CreateBoard(ctx context.Context, b model.Board) (string, error) {
+type Board struct{}
+
+func (h Board) Create(ctx context.Context, b model.Board) (string, error) {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
@@ -22,7 +24,7 @@ func CreateBoard(ctx context.Context, b model.Board) (string, error) {
 	return res.InsertedID.(primitive.ObjectID).Hex(), nil
 }
 
-func UpdateBoard(ctx context.Context, b model.Board) error {
+func (h Board) Update(ctx context.Context, b model.Board) error {
 	f := bson.M{"_id": b.ID, "user_id": b.UserId}
 
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
@@ -34,7 +36,7 @@ func UpdateBoard(ctx context.Context, b model.Board) error {
 	return nil
 }
 
-func FillBoardWithListsAndCards(ctx context.Context, board *model.Board) error {
+func (h Board) FillBoardWithListsAndCards(ctx context.Context, board *model.Board) error {
 	lists, err := repository.Lists.GetByBoardId(ctx, board.ID.Hex())
 	if err != nil {
 		return err
