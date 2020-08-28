@@ -13,8 +13,10 @@ import (
 )
 
 type AuthController struct {
-	AuthService *auth.Auth
+	JwtService  *auth.JWTService
 	Validate    *validator.Validate
+	AuthHandler handlers.Auth
+	UserHandler handlers.User
 }
 
 func (a *AuthController) SignIn(w http.ResponseWriter, r *http.Request) {
@@ -27,11 +29,11 @@ func (a *AuthController) SignIn(w http.ResponseWriter, r *http.Request) {
 		JSONResp(w, 422, ErrResp{"username or password can't be empty"})
 		return
 	}
-	if err := handlers.Authenticate(r.Context(), &user); err != nil {
+	if err := a.AuthHandler.Authenticate(r.Context(), &user); err != nil {
 		JSONResp(w, 400, ErrResp{err.Error()})
 		return
 	}
-	token, err := a.AuthService.GenerateToken(user)
+	token, err := a.JwtService.GenerateToken(user)
 	if err != nil {
 		JSONResp(w, 400, ErrResp{err.Error()})
 		return
@@ -51,7 +53,7 @@ func (a *AuthController) SignUp(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	if err := handlers.CreateUser(r.Context(), user); err != nil {
+	if err := a.UserHandler.Create(r.Context(), user); err != nil {
 		JSONResp(w, 400, ErrResp{err.Error()})
 		return
 	}
@@ -61,7 +63,7 @@ func (a *AuthController) SignUp(w http.ResponseWriter, r *http.Request) {
 func (a *AuthController) VerifyEmail(w http.ResponseWriter, r *http.Request) {
 	user := r.Context().Value(mid.UserCtx).(model.User)
 	code := chi.URLParam(r, "code")
-	if err := handlers.VerifyEmail(r.Context(), user, code); err != nil {
+	if err := a.AuthHandler.VerifyEmail(r.Context(), user, code); err != nil {
 		JSONResp(w, 400, ErrResp{err.Error()})
 		return
 	}
@@ -80,7 +82,7 @@ func (a *AuthController) ResetPassword(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	if err := handlers.ResetPassword(r.Context(), req.Email); err != nil {
+	if err := a.AuthHandler.ResetPassword(r.Context(), req.Email); err != nil {
 		JSONResp(w, 400, ErrResp{err.Error()})
 		return
 	}
@@ -99,7 +101,7 @@ func (a *AuthController) NewPassword(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	if err := handlers.SetNewPassword(r.Context(), req.Email, req.Code, req.Password); err != nil {
+	if err := a.AuthHandler.SetNewPassword(r.Context(), req.Email, req.Code, req.Password); err != nil {
 		JSONResp(w, 400, ErrResp{err.Error()})
 		return
 	}
