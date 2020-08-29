@@ -34,12 +34,16 @@ func NewUserCtrl() *UserController {
 	return &UserController{}
 }
 
-func NewCardCtrl() *CardController {
-	return &CardController{}
+func NewCardCtrl(validator *validator.Validate, cardHandler handlers.Card) *CardController {
+	return &CardController{
+		Validate:    validator,
+		CardHandler: cardHandler,
+	}
 }
 
-func NewListCtrl(validator *validator.Validate) *ListController {
+func NewListCtrl(validator *validator.Validate, listHandler handlers.List) *ListController {
 	return &ListController{
-		Validate: validator,
+		Validate:    validator,
+		ListHandler: listHandler,
 	}
 }
