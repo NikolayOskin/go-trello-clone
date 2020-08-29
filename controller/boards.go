@@ -14,7 +14,8 @@ import (
 )
 
 type BoardController struct {
-	Validate *validator.Validate
+	Validate     *validator.Validate
+	BoardHandler handlers.Board
 }
 
 func (b *BoardController) GetFull(w http.ResponseWriter, r *http.Request) {
@@ -24,7 +25,7 @@ func (b *BoardController) GetFull(w http.ResponseWriter, r *http.Request) {
 		JSONResp(w, 404, ErrResp{Message: "Not found"})
 		return
 	}
-	if err := handlers.FillBoardWithListsAndCards(r.Context(), board); err != nil {
+	if err := b.BoardHandler.FillBoardWithListsAndCards(r.Context(), board); err != nil {
 		JSONResp(w, 500, ErrResp{Message: err.Error()})
 		return
 	}
@@ -45,7 +46,7 @@ func (b *BoardController) Create(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	board.UserId = user.ID.Hex()
-	boardId, err := handlers.CreateBoard(r.Context(), board)
+	boardId, err := b.BoardHandler.Create(r.Context(), board)
 	if err != nil {
 		JSONResp(w, 500, ErrResp{Message: "Server error"})
 		return
@@ -61,7 +62,7 @@ func (b *BoardController) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	board.ID = id
-	if err := handlers.UpdateBoard(r.Context(), board); err != nil {
+	if err := b.BoardHandler.Update(r.Context(), board); err != nil {
 		JSONResp(w, 500, ErrResp{Message: "Server error"})
 		return
 	}

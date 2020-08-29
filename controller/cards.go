@@ -10,11 +10,15 @@ import (
 	"github.com/NikolayOskin/go-trello-clone/model"
 	"github.com/NikolayOskin/go-trello-clone/service/handlers"
 	"github.com/go-chi/chi"
+	"github.com/go-playground/validator/v10"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type CardController struct{}
+type CardController struct {
+	Validate    *validator.Validate
+	CardHandler handlers.Card
+}
 
 func (c *CardController) Create(w http.ResponseWriter, r *http.Request) {
 	var card model.Card
@@ -24,7 +28,7 @@ func (c *CardController) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	card.UserId = user.ID.Hex()
-	cardId, err := handlers.CreateCard(r.Context(), card)
+	cardId, err := c.CardHandler.Create(r.Context(), card)
 	if err != nil {
 		JSONResp(w, 500, ErrResp{Message: "Server error"})
 		return
@@ -40,7 +44,7 @@ func (c *CardController) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	card.ID = id
-	if err = handlers.UpdateCard(r.Context(), card); err != nil {
+	if err = c.CardHandler.Update(r.Context(), card); err != nil {
 		JSONResp(w, 200, ErrResp{Message: "Server error"})
 		return
 	}
