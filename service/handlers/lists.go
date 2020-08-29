@@ -14,7 +14,7 @@ import (
 
 type List struct{}
 
-func (h List) CreateList(ctx context.Context, list model.List) (string, error) {
+func (h List) Create(ctx context.Context, list model.List) (string, error) {
 	board, err := repository.Boards.GetById(ctx, list.BoardId)
 	if err != nil {
 		return "", err
@@ -33,7 +33,7 @@ func (h List) CreateList(ctx context.Context, list model.List) (string, error) {
 	return res.InsertedID.(primitive.ObjectID).Hex(), nil
 }
 
-func (h List) UpdateList(ctx context.Context, l model.UpdateList) error {
+func (h List) Update(ctx context.Context, l model.UpdateList) error {
 	f := bson.M{"_id": l.ID, "user_id": l.UserId}
 
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
@@ -45,7 +45,7 @@ func (h List) UpdateList(ctx context.Context, l model.UpdateList) error {
 	return nil
 }
 
-func (h List) DeleteList(ctx context.Context, listId primitive.ObjectID, u model.User) error {
+func (h List) Delete(ctx context.Context, listId primitive.ObjectID, u model.User) error {
 	// first deleting cards associated with list, then delete list
 	f := bson.M{"list_id": listId.Hex(), "user_id": u.ID.Hex()}
 

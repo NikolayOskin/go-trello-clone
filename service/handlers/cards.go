@@ -14,7 +14,7 @@ import (
 
 type Card struct{}
 
-func (h Card) CreateCard(ctx context.Context, c model.Card) (string, error) {
+func (h Card) Create(ctx context.Context, c model.Card) (string, error) {
 	list, err := repository.Lists.GetById(ctx, c.ListId)
 	if err != nil {
 		return "", err
@@ -30,7 +30,7 @@ func (h Card) CreateCard(ctx context.Context, c model.Card) (string, error) {
 	return res.InsertedID.(primitive.ObjectID).Hex(), nil
 }
 
-func (h Card) UpdateCard(ctx context.Context, c model.Card) error {
+func (h Card) Update(ctx context.Context, c model.Card) error {
 	card, err := repository.Cards.GetById(ctx, c.ID.Hex())
 	if err != nil {
 		return err
